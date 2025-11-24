@@ -1,0 +1,337 @@
+<div style="height: 100%; width: 100%; display: table">
+  <div
+    ng-if="RC.showMessage == 'none'"
+    style="display: table-cell; height: 100%; vertical-align: middle"
+  >
+    <div
+      ng-if="RC.state == 'instructionsSlide'"
+      class="panel panel-primary"
+      style="width: 60%; margin: auto"
+    >
+      <div class="panel-heading" style="font-weight: bolder">Instructions</div>
+      <div class="panel-body">
+        @_SHOW_INSTRUCTIONS_@
+        <button
+          ng-click="RC.next()"
+          type="button"
+          class="btn btn-default"
+          style="float: right; margin-top: 20px"
+        >
+          Next
+        </button>
+      </div>
+    </div>
+
+    <div
+      ng-if="RC.state == 'workerIdSlide'"
+      class="panel panel-primary"
+      style="width: 60%; margin: auto"
+    >
+      <div class="panel-heading" style="font-weight: bolder">
+        Please enter your Prolific ID into the box below:
+      </div>
+      <div class="panel-body">
+        <input
+          id="workerId"
+          ng-model="RC.workerId"
+          name="workerId"
+          type="text"
+          class="form-control"
+          placeholder="enter here"
+        />
+        <button
+          ng-click="RC.next()"
+          type="button"
+          ng-disabled="RC.workerId == ''"
+          class="btn btn-default"
+          style="float: right; margin-top: 20px"
+        >
+          Next
+        </button>
+      </div>
+    </div>
+
+    <div
+      ng-if="RC.state == 'questionnaireSlide'"
+      class="panel panel-primary"
+      style="width: 60%; margin: auto"
+    >
+      <div class="panel-heading" style="font-weight: bolder">
+        Fragebogen zum Experimentende
+      </div>
+      <div class="panel-body">
+        <span
+          >Vielen Dank für Ihre Teilnahme am Experiment. Sie haben alle Aufgaben
+          erfolgreich abgeschlossen. Bitte nehmen Sie sich einen Moment Zeit, um
+          die folgenden Fragen zum Experiment zu beantworten.</span
+        >
+        <div class="container">
+          <div class="row">
+            <span
+              >1. Hatten Sie bereits Vorerfahrung mit einer der
+              Aufgabenarten?</span
+            >
+            <radio-answer
+              options="['Ja', 'Nein']"
+              inline="true"
+              answer="RC.postExperimentFeedback['priorExperience']"
+            >
+            </radio-answer>
+            <p style="margin-top: 1em">
+              <span
+                >Falls ja, geben Sie bitte an, welche Typen Sie zuvor
+                ausprobiert haben.</span
+              >
+              <text-answer answer="RC.postExperimentFeedback['priorTasks']">
+              </text-answer>
+            </p>
+          </div>
+          <div class="row">
+            <span
+              >2. Haben Sie beim Bearbeiten der Leseaufgabe eine bestimmte
+              Strategie oder Vorgehensweise verfolgt?</span
+            >
+            <radio-answer
+              options="['Ja', 'Nein']"
+              inline="true"
+              answer="RC.postExperimentFeedback['strategyUsed']"
+            >
+            </radio-answer>
+            <p style="margin-top: 1em">
+              <span
+                >Falls ja, erläutern Sie bitte kurz die angewandte
+                Strategie.</span
+              >
+              <text-answer
+                answer="RC.postExperimentFeedback['strategyDesc']"
+              ></text-answer>
+            </p>
+          </div>
+          <div class="row">
+            <span>3. Worum geht es Ihrer Meinung nach in dem Experiment?</span>
+            <text-answer
+              answer="RC.postExperimentFeedback['experimentMotive']"
+            ></text-answer>
+          </div>
+          <div class="row">
+            <span
+              >4. Haben Sie weitere Anmerkungen oder Feedback zum Experiment als
+              Ganzes oder zu einzelnen Aufgaben?</span
+            >
+            <text-answer
+              answer="RC.postExperimentFeedback['feedback']"
+            ></text-answer>
+          </div>
+          <div class="row" style="width: inherit">
+            <p>
+              <a
+                href=""
+                class="toggle-link"
+                ng-click="RC.toggle()"
+                role="button"
+                tabindex="0"
+              >
+                klicken Sie hier,
+              </a>
+              um die Motivation hinter dem Experiment zu sehen, falls Sie daran
+              interessiert sind.
+            </p>
+
+            <!-- Toggled content -->
+            <div ng-show="RC.showMotivation" style="width: 70%">
+              <h3>Motivation des Experiments</h3>
+              <p style="font-size: 14px">
+                Diese Studie untersucht die Rolle der inhibitorischen Kontrolle
+                bei den Lesefähigkeiten von Bilingualen, wobei der Fokus auf
+                deutschen Muttersprachlern liegt, die Sätze in ihrer
+                Zweitsprache Englisch lesen. Konkret untersuchen wir, wie die
+                inhibitorische Kontrolle Individuen dabei unterstützt,
+                Mehrdeutigkeiten beim Lesen aufzulösen, und ob Unterschiede in
+                diesen Kontrollmechanismen mit individuellen Unterschieden in
+                den Lese- und Verständnisfähigkeiten einhergehen.
+              </p>
+            </div>
+          </div>
+        </div>
+        <button
+          ng-click="RC.next()"
+          type="button"
+          ng-disabled="RC.validate()"
+          class="btn btn-default"
+          style="float: right; margin-top: 20px"
+        >
+          Next
+        </button>
+      </div>
+    </div>
+
+    <div ng-if="RC.state == 'statisticsSlide'">
+      <statistics-slide
+        statistics="RC.statistics"
+        click="RC.next"
+      ></statistics-slide>
+    </div>
+
+    <div
+      id="experiment_content"
+      ng-if="RC.state == 'questionSlide' && RC.questionIndex == $index"
+      ng-repeat="question in RC.questions"
+      style="width: 60%; margin: auto"
+    >
+      <!-- the main content of the experiment goes here -->
+      <div id="experiment_panel_1" class="panel panel-primary">
+        <div
+          id="experiment_heading_1"
+          class="panel-heading"
+          style="font-weight: bolder"
+        >
+          Trial {{RC.questionIndex + 1}} of {{RC.questions.length}}
+        </div>
+        <div id="experiment_body_1" class="panel-body">
+          <div
+            style="display: flex; justify-content: center; align-items: center"
+          >
+            <!-- Child div -->
+            <div style="padding: 10px; margin-bottom: 4em">
+              <!-- Top row -->
+              <div style="text-align: center; margin: 2em">
+                <span style="font-size: 40"><i>{{question.item}}</i></span>
+              </div>
+
+              <!-- Bottom row with 2 columns -->
+              <div
+                style="display: flex; gap: 5em; justify-content: space-around"
+              >
+                <div>
+                  <button
+                    ng-click="RC.nextQuestion(1)"
+                    type="button"
+                    class="btn btn-default"
+                    style="width: 100px"
+                  >
+                    <span style="font-size: 36">Yes</span>
+                  </button>
+                </div>
+                <div>
+                  <button
+                    ng-click="RC.nextQuestion(0)"
+                    type="button"
+                    class="btn btn-default"
+                    style="width: 100px"
+                  >
+                    <span style="font-size: 36">No</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!--
+                        If you don't want to skip participants through your items, you should prevent them by checking if the input is empty. In that case the
+                        button will be disabled. We use the "ng-disabled" attribute to achieve that. Below you find an example how that might look like:
+
+                        <button ng-disabled="question.answer === undefined || question.answer === '' || question.answer == {}" ng-click="RC.nextQuestion()" type="button" class="btn btn-default" style="float:right ; margin-top:20px">Next</button>
+                        -->
+        </div>
+      </div>
+      <!-- /the main content of the experiment goes here -->
+    </div>
+  </div>
+
+  <div
+    ng-if="RC.showMessage == 'nextSubList'"
+    style="
+      height: 100%;
+      width: 100%;
+      display: table;
+      position: absolute;
+      top: 0;
+      left: 0;
+    "
+  >
+    <div style="display: table-cell; height: 100%; vertical-align: middle">
+      <div style="width: 60%; margin: auto">
+        <!-- <this message is shown if a user successfully finished a sublist> -->
+        <div class="panel panel-primary">
+          <!-- <the message's heading> -->
+          <div
+            class="panel-heading"
+            style="font-weight: bolder"
+            id="nextSubList_title"
+          >
+            Attention:
+          </div>
+          <!-- </the message's heading> -->
+          <div class="panel-body">
+            <!-- <the message content> -->
+            <div id="nextSubList_message">
+              You've successfully completed a sublist. You may either stop here
+              or continue with another one.
+            </div>
+            <!-- </the message content. please don't edit the buttons below (except their label)> -->
+            <hr />
+            <button
+              ng-click="RC.processFinish()"
+              style="float: right; margin-left: 10px"
+              class="btn btn-default"
+              type="button"
+            >
+              Stop here
+            </button>
+            <button
+              ng-click="RC.nextSublist()"
+              style="float: right"
+              class="btn btn-default"
+              type="button"
+            >
+              Continue
+            </button>
+          </div>
+        </div>
+        <!-- </this message is shown if a user successfully finished a sublist> -->
+      </div>
+    </div>
+  </div>
+
+  <div
+    ng-if="RC.showMessage == 'goodBye'"
+    style="
+      height: 100%;
+      width: 100%;
+      display: table;
+      position: absolute;
+      top: 0;
+      left: 0;
+    "
+  >
+    <div style="display: table-cell; height: 100%; vertical-align: middle">
+      <div style="width: 60%; margin: auto">
+        <div class="panel panel-primary">
+          <div
+            id="goodBye_title"
+            class="panel-heading"
+            style="font-weight: bolder"
+          >
+            Attention:
+          </div>
+          <div class="panel-body">
+            <div id="goodBye_message">
+              You've successfully completed the experiment. Thank you for your
+              participation. To hand in your submission, click on the
+              "Submit"-button below.
+            </div>
+            <hr />
+            <button
+              ng-click="RC.finished()"
+              style="float: right"
+              class="btn btn-default"
+              type="button"
+            >
+              Submit
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

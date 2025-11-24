@@ -1,0 +1,69 @@
+/* Fill in your CSS code here */
+th,
+td {
+    padding: 6px;
+    font-size: 14px;
+}
+
+td input {
+    width: 100%;
+    box-sizing: border-box;
+    /* so padding/border don't overflow */
+}
+
+.gender,
+.age,
+.q1,
+.q2,
+.q3,
+.q4,
+.q5,
+.q6,
+.q7,
+.q8,
+.q9,
+.q1-de,
+.q2-de,
+.q3-de,
+.q4-de,
+.q4-de,
+.q5-de,
+.q6-de,
+.q7-de,
+.q1-eng,
+.q2-eng,
+.q3-eng,
+.q4-eng,
+.q4-eng,
+.q5-eng,
+.q6-eng,
+.q7-eng {
+    margin: 2em 0;
+}
+
+select {
+    width: 200px;
+}
+
+option {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.question-text {
+    font-size: 16px;
+    display: block;
+    margin-bottom: 8px;
+}
+
+.lang-text {
+    margin-right: 1em;
+}
+
+.checkbox-label {
+    display: inline-block;
+    margin: 0 1em 0 2em;
+    font-weight: normal;
+    font-size: 14px;
+}

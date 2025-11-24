@@ -1,0 +1,17 @@
+[
+    {
+        "type": "String",
+        "simpleTypeName": "String",
+        "name": "item"
+    },
+    {
+        "type": "String",
+        "simpleTypeName": "String",
+        "name": "screenPosition"
+    },
+    {
+        "type": "String",
+        "simpleTypeName": "String",
+        "name": "trialType"
+    }
+]

@@ -1,0 +1,1535 @@
+<div style="height: 100%; width: 100%; display: table">
+  <div
+    ng-if="RC.showMessage == 'none'"
+    style="display: table-cell; height: 100%; vertical-align: middle"
+  >
+    <div
+      ng-if="RC.state == 'instructionsSlide'"
+      class="panel panel-primary"
+      style="width: 90%; margin: auto"
+    >
+      <div class="panel-heading" style="font-weight: bolder">Anweisungen</div>
+      <div class="panel-body">
+        @_SHOW_INSTRUCTIONS_@
+        <button
+          ng-click="RC.next()"
+          type="button"
+          class="btn btn-default"
+          style="float: right; margin-top: 20px"
+        >
+          Weiter
+        </button>
+      </div>
+    </div>
+
+    <div
+      ng-if="RC.state == 'workerIdSlide'"
+      class="panel panel-primary"
+      style="width: 90%; margin: auto"
+    >
+      <div class="panel-heading" style="font-weight: bolder">
+        Bitte geben Sie Ihre Prolific-ID in das Feld unten ein:
+      </div>
+      <div class="panel-body">
+        <input
+          id="workerId"
+          ng-model="RC.workerId"
+          name="workerId"
+          type="text"
+          class="form-control"
+          placeholder="enter here"
+        />
+        <button
+          ng-click="RC.next()"
+          type="button"
+          ng-disabled="RC.workerId == ''"
+          class="btn btn-default"
+          style="float: right; margin-top: 20px"
+        >
+          Weiter
+        </button>
+      </div>
+    </div>
+
+    <div ng-if="RC.state == 'statisticsSlide'">
+      <statistics-slide
+        statistics="RC.statistics"
+        click="RC.next"
+      ></statistics-slide>
+    </div>
+
+    <div
+      id="experiment_content"
+      ng-if="RC.state == 'questionSlide'"
+      style="width: 90%; margin: auto"
+    >
+      <!-- the main content of the experiment goes here -->
+      <div id="experiment_panel_1" class="panel panel-primary">
+        <div
+          id="experiment_heading_1"
+          class="panel-heading"
+          style="font-weight: bolder"
+        >
+          Bitte füllen Sie den Fragebogen zu Spracherfahrung und
+          Sprachkenntnissen aus
+        </div>
+        <div id="experiment_body_1" class="panel-body">
+          <div class="screen1" ng-if="RC.screen1">
+            <div class="container">
+              <div class="age">
+                <span class="question-text">(1) Alter</span>
+                <input
+                  type="number"
+                  max="100"
+                  min="18"
+                  ng-model="RC.form.age"
+                />
+              </div>
+              <div class="gender">
+                <span class="question-text">(2) Geschlecht</span>
+                <radio-answer
+                  options="['Männlich ','Wieblich','Nicht-binär', 'Bevorzuge es nicht zu sagen']"
+                  answer="RC.form.gender"
+                  inline="true"
+                >
+                </radio-answer>
+              </div>
+              <div class="gender">
+                <span class="question-text">(3) Muttersprache</span>
+                <input
+                  type="text"
+                  ng-model="RC.form.motherTongue"
+                  class="lang-text"
+                  ng-required="true"
+                />
+              </div>
+              <div class="q1">
+                <span class="question-text"
+                  >(4) Listen Sie alle Sprachen, die Sie beherrschen, in der
+                  Reihenfolge Ihres Kenntnisstands, auf:</span
+                ><br />
+                <input
+                  type="text"
+                  ng-model="RC.form.q1.l1"
+                  class="lang-text"
+                  ng-required="true"
+                />
+                <input
+                  type="text"
+                  ng-model="RC.form.q1.l2"
+                  class="lang-text"
+                  ng-required="true"
+                />
+                <input type="text" class="lang-text" ng-model="RC.form.q1.l3" />
+                <input type="text" class="lang-text" ng-model="RC.form.q1.l4" />
+                <input type="text" ng-model="RC.form.q1.l5" />
+              </div>
+              <div class="q2">
+                <span class="question-text"
+                  >(5) Listen Sie alle Sprachen, die Sie beherrschen, in der
+                  Reihenfolge nach Zeitpunkt des Erlernens, auf (beginnend mit
+                  Ihrer Muttersprache):</span
+                ><br />
+                <input
+                  type="text"
+                  ng-model="RC.form.q2.l1"
+                  class="lang-text"
+                  ng-required="true"
+                />
+                <input
+                  type="text"
+                  ng-model="RC.form.q2.l2"
+                  class="lang-text"
+                  ng-required="true"
+                />
+                <input type="text" ng-model="RC.form.q2.l3" class="lang-text" />
+                <input type="text" ng-model="RC.form.q2.l4" class="lang-text" />
+                <input type="text" ng-model="RC.form.q2.l5" />
+              </div>
+              <div class="q3">
+                <span class="question-text"
+                  >(6) Geben Sie an, in welchem Maß Sie derzeit durchschnittlich
+                  (in %) mit jeder der Sprachen konfrontiert sind. (Insgesamt
+                  sollten Ihre Angaben 100% ergeben):</span
+                >
+                <table border="1" cellpadding="18" cellspacing="0">
+                  <thead>
+                    <tr>
+                      <th>Sprache</th>
+                      <td>{{RC.form.q1.l1}}</td>
+                      <td>{{RC.form.q1.l2}}</td>
+                      <td>{{RC.form.q1.l3}}</td>
+                      <td>{{RC.form.q1.l4}}</td>
+                      <td>{{RC.form.q1.l5}}</td>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <th>Prozentualer Anteil:</th>
+                      <td>
+                        <input
+                          type="number"
+                          ng-model="RC.form.q3.l1"
+                          min="1"
+                          max="100"
+                          placeholder="1–100"
+                          class="form-control"
+                        />
+                      </td>
+                      <td>
+                        <input
+                          type="number"
+                          ng-model="RC.form.q3.l2"
+                          min="1"
+                          max="100"
+                          placeholder="1–100"
+                          class="form-control"
+                        />
+                      </td>
+                      <td>
+                        <input
+                          type="number"
+                          ng-model="RC.form.q3.l3"
+                          min="1"
+                          max="100"
+                          placeholder="1–100"
+                          class="form-control"
+                        />
+                      </td>
+                      <td>
+                        <input
+                          type="number"
+                          ng-model="RC.form.q3.l4"
+                          min="1"
+                          max="100"
+                          placeholder="1–100"
+                          class="form-control"
+                        />
+                      </td>
+                      <td>
+                        <input
+                          type="number"
+                          ng-model="RC.form.q3.l5"
+                          min="1"
+                          max="100"
+                          placeholder="1–100"
+                          class="form-control"
+                        />
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+                <span ng-if="RC.getTotal(3) > 100" style="color: red">
+                  Ihre Prozentsätze liegen über 100 %
+                </span>
+                <span
+                  ng-if="RC.getTotal(3) < 100 && RC.getTotal(3) > 0"
+                  style="color: orange"
+                >
+                  Bitte stellen Sie sicher, dass die Summe 100 % ergibt.
+                </span>
+                <span
+                  ng-if="RC.checkInvalidLang(3)"
+                  style="color: rgb(255, 0, 0)"
+                >
+                  Bitte geben Sie nur Prozentsätze für gültige Sprachen an, und
+                  lassen Sie keine Prozentsätze leer für gewählte Sprachen.
+                </span>
+              </div>
+              <div class="q4">
+                <span class="question-text"
+                  >(7) Sie möchten einen Text lesen, der in allen von Ihnen
+                  beherrschten Sprachen verfügbar ist. Wie häufig (in %) würden
+                  Sie sich beim Lesen für welche Sprache entscheiden? Gehen Sie
+                  davon aus, dass das Original in einer Ihnen unbekannten
+                  Sprache geschrieben wurde. (Insgesamt sollten Ihre Angaben
+                  100% ergeben):</span
+                >
+                <table border="1" cellpadding="18" cellspacing="0">
+                  <thead>
+                    <tr>
+                      <th>Sprache</th>
+                      <td>{{RC.form.q1.l1}}</td>
+                      <td>{{RC.form.q1.l2}}</td>
+                      <td>{{RC.form.q1.l3}}</td>
+                      <td>{{RC.form.q1.l4}}</td>
+                      <td>{{RC.form.q1.l5}}</td>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <th>Prozentualer Anteil:</th>
+                      <td>
+                        <input
+                          type="number"
+                          ng-model="RC.form.q4.l1"
+                          min="1"
+                          max="100"
+                          placeholder="1–100"
+                          class="form-control"
+                        />
+                      </td>
+                      <td>
+                        <input
+                          type="number"
+                          ng-model="RC.form.q4.l2"
+                          min="1"
+                          max="100"
+                          placeholder="1–100"
+                          class="form-control"
+                        />
+                      </td>
+                      <td>
+                        <input
+                          type="number"
+                          ng-model="RC.form.q4.l3"
+                          min="1"
+                          max="100"
+                          placeholder="1–100"
+                          class="form-control"
+                        />
+                      </td>
+                      <td>
+                        <input
+                          type="number"
+                          ng-model="RC.form.q4.l4"
+                          min="1"
+                          max="100"
+                          placeholder="1–100"
+                          class="form-control"
+                        />
+                      </td>
+                      <td>
+                        <input
+                          type="number"
+                          ng-model="RC.form.q4.l5"
+                          min="1"
+                          max="100"
+                          placeholder="1–100"
+                          class="form-control"
+                        />
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+                <span
+                  ng-if="RC.checkInvalidLang(4)"
+                  style="color: rgb(255, 0, 0)"
+                >
+                  Bitte geben Sie nur Prozentsätze für gültige Sprachen an, und
+                  lassen Sie keine Prozentsätze leer für gewählte Sprachen.
+                </span>
+                <span ng-if="RC.getTotal(4) > 100" style="color: red">
+                  Ihre Prozentsätze liegen über 100 %
+                </span>
+                <span
+                  ng-if="RC.getTotal(4) < 100 && RC.getTotal(4) > 0"
+                  style="color: orange"
+                >
+                  Bitte stellen Sie sicher, dass die Summe 100 % ergibt.
+                </span>
+              </div>
+              <div class="q5">
+                <span class="question-text"
+                  >(8) Sie unterhalten sich mit jemandem, der alle von Ihnen
+                  gesprochenen Sprachen gleichermaßen beherrscht. Wie häufig (in
+                  % und anteilig an der Gesamtzeit) würden Sie welche Sprache im
+                  Gespräch wählen? (Insgesamt sollten Ihre Angaben 100%
+                  ergeben):</span
+                >
+                <table border="1" cellpadding="18" cellspacing="0">
+                  <thead>
+                    <tr>
+                      <th>Sprache</th>
+                      <td>{{RC.form.q1.l1}}</td>
+                      <td>{{RC.form.q1.l2}}</td>
+                      <td>{{RC.form.q1.l3}}</td>
+                      <td>{{RC.form.q1.l4}}</td>
+                      <td>{{RC.form.q1.l5}}</td>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <th>Prozentualer Anteil:</th>
+                      <td>
+                        <input
+                          type="number"
+                          ng-model="RC.form.q5.l1"
+                          min="1"
+                          max="100"
+                          placeholder="1–100"
+                          class="form-control"
+                        />
+                      </td>
+                      <td>
+                        <input
+                          type="number"
+                          ng-model="RC.form.q5.l2"
+                          min="1"
+                          max="100"
+                          placeholder="1–100"
+                          class="form-control"
+                        />
+                      </td>
+                      <td>
+                        <input
+                          type="number"
+                          ng-model="RC.form.q5.l3"
+                          min="1"
+                          max="100"
+                          placeholder="1–100"
+                          class="form-control"
+                        />
+                      </td>
+                      <td>
+                        <input
+                          type="number"
+                          ng-model="RC.form.q5.l4"
+                          min="1"
+                          max="100"
+                          placeholder="1–100"
+                          class="form-control"
+                        />
+                      </td>
+                      <td>
+                        <input
+                          type="number"
+                          ng-model="RC.form.q5.l5"
+                          min="1"
+                          max="100"
+                          placeholder="1–100"
+                          class="form-control"
+                        />
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+                <span ng-if="RC.getTotal(5) > 100" style="color: red">
+                  Ihre Prozentsätze liegen über 100 %
+                </span>
+                <span
+                  ng-if="RC.checkInvalidLang(5)"
+                  style="color: rgb(255, 0, 0)"
+                >
+                  Bitte geben Sie nur Prozentsätze für gültige Sprachen an, und
+                  lassen Sie keine Prozentsätze leer für gewählte Sprachen.
+                </span>
+                <span
+                  ng-if="RC.getTotal(5) < 100 && RC.getTotal(5) > 0"
+                  style="color: orange"
+                >
+                  Bitte stellen Sie sicher, dass die Summe 100 % ergibt.
+                </span>
+              </div>
+              <!-- <div class="q6">
+                <span class="question-text"
+                  >(8) Welchen Kulturkreisen fühlen Sie sich zugehörig? Geben
+                  Sie auf einer Skala von 0 bis 10 an, wie sehr Sie sich dem
+                  jeweiligen Kulturkreis zugehörig fühlen (mögliche Kulturkreise
+                  sind der deutsche, türkische, arabische, russische,
+                  katholische, etc.):</span
+                >
+                <table border="1" cellpadding="18" cellspacing="0">
+                  <thead>
+                    <tr>
+                      <th>Kulturkreis</th>
+                      <td>
+                        <input
+                          type="text"
+                          ng-model="RC.form.q6.id1.name"
+                          class="form-control"
+                        />
+                      </td>
+                      <td>
+                        <input
+                          type="text"
+                          ng-model="RC.form.q6.id2.name"
+                          class="form-control"
+                        />
+                      </td>
+                      <td>
+                        <input
+                          type="text"
+                          ng-model="RC.form.q6.id3.name"
+                          class="form-control"
+                        />
+                      </td>
+                      <td>
+                        <input
+                          type="text"
+                          ng-model="RC.form.q6.id4.name"
+                          class="form-control"
+                        />
+                      </td>
+                      <td>
+                        <input
+                          type="text"
+                          ng-model="RC.form.q6.id5.name"
+                          class="form-control"
+                        />
+                      </td>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <th></th>
+                      <td>
+                        <select
+                          ng-model="RC.form.q6.id1.selected"
+                          ng-options="opt for opt in RC.identification"
+                        >
+                          <option value="">-- für Skala hier klicken --</option>
+                        </select>
+                      </td>
+                      <td>
+                        <select
+                          ng-model="RC.form.q6.id2.selected"
+                          ng-options="opt for opt in RC.identification"
+                        >
+                          <option value="">-- für Skala hier klicken --</option>
+                        </select>
+                      </td>
+                      <td>
+                        <select
+                          ng-model="RC.form.q6.id3.selected"
+                          ng-options="opt for opt in RC.identification"
+                        >
+                          <option value="">-- für Skala hier klicken --</option>
+                        </select>
+                      </td>
+                      <td>
+                        <select
+                          ng-model="RC.form.q6.id4.selected"
+                          ng-options="opt for opt in RC.identification"
+                        >
+                          <option value="">-- für Skala hier klicken --</option>
+                        </select>
+                      </td>
+                      <td>
+                        <select
+                          ng-model="RC.form.q6.id5.selected"
+                          ng-options="opt for opt in RC.identification"
+                        >
+                          <option value="">-- für Skala hier klicken --</option>
+                        </select>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+                <span ng-if="RC.checkIdentity()" style="color: rgb(255, 0, 0)">
+                  Bitte geben Sie nur Prozentsätze für gültige Sprachen an, und
+                  lassen Sie keine Prozentsätze leer für gewählte Sprachen.
+                </span>
+              </div> -->
+              <div class="q7">
+                <span class="question-text"
+                  >(9) Dauer Ihrer formalen Schul- und Ausbildung (in Jahren)
+                  <input type="number" max="50" min="1" ng-model="RC.form.q7.a"
+                /></span>
+
+                <span class="question-text"
+                  >Kreuzen Sie das Feld an, das Ihrem höchsten Bildungsstand
+                  entspricht</span
+                >
+                <radio-answer
+                  options="['ohne Schulabschluss', 'Hauptschulabschluss', 'Realschulabschluss', 'Hochschulreife', 'Berufsausbildung','Hochschulabschluss', 'Promotion','Sonstiges']"
+                  answer="RC.form.q7.b"
+                >
+                </radio-answer>
+              </div>
+              <!-- <div class="q8">
+                <span class="question-text"
+                  >(10) Haben Sie in einem englischsprachigen Land gelebt? Wenn
+                  ja, geben Sie bitte die Dauer in Jahren an.:
+                  <input type="number" ng-model="RC.form.q8"
+                /></span>
+              </div> -->
+              <div class="q9">
+                <span class="question-text"
+                  >(11) Kreuzen Sie alle zutreffenden Kästchen an, wenn Sie an
+                  einer der folgenden Beeinträchtigungen leiden/litten:</span
+                >
+                <label class="checkbox-label" ng-repeat="d in RC.disabilities">
+                  <input
+                    type="checkbox"
+                    ng-checked="RC.form.q9.a.indexOf(d) > -1"
+                    ng-click="RC.toggle(d)"
+                  />
+                  {{ d }} </label
+                ><br />
+                <div style="margin-left: 2em; margin-top: 0.9em">
+                  <span class="question-text"
+                    >Erläutern Sie bitte die zutreffenden (einschließlich
+                    Maßnahmen zur Abhilfe)
+                    <input type="text" ng-model="RC.form.q9.explained"
+                  /></span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Weiter Button to go to language specific sections-->
+            <button
+              ng-click="RC.nextScreen()"
+              style="float: right"
+              class="btn btn-default"
+              type="button"
+              ng-disabled="RC.validateScreenQuestions()"
+            >
+              Weiter
+            </button>
+          </div>
+          <!-- <div class="screen2" ng-if="RC.screen2">
+            <div class="container">
+              <h2>Sprache: Deutsch</h2>
+              <span class="question-text"
+                >Dies ist meine
+                <select
+                  ng-model="RC.form.deCategory"
+                  ng-options="opt for opt in RC.languageType"
+                >
+                  <option value="">bitte aus dem Drop-Down-Menü wählen</option>
+                </select></span
+              >
+
+              <span class="question-text"
+                >Alle folgenden Fragen beziehen sich auf Ihre Deutsche
+                kenntnisse</span
+              >
+              <div class="q1-de">
+                <span class="question-text">(1) Alter, in dem Sie:</span>
+                <table border="1" cellpadding="18" cellspacing="0">
+                  <thead>
+                    <tr>
+                      <th>erlernten:</th>
+                      <th>anfingen fließend zu sprechen:</th>
+                      <th>anfingen, in zu lesen:</th>
+                      <th>anfingen, fließend in zu lesen:</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td>
+                        <input
+                          type="number"
+                          max="40"
+                          min="1"
+                          ng-model="RC.form.de.q1.a"
+                        />
+                      </td>
+                      <td>
+                        <input
+                          type="number"
+                          max="40"
+                          min="1"
+                          ng-model="RC.form.de.q1.b"
+                        />
+                      </td>
+                      <td>
+                        <input
+                          type="number"
+                          max="40"
+                          min="1"
+                          ng-model="RC.form.de.q1.c"
+                        />
+                      </td>
+                      <td>
+                        <input
+                          type="number"
+                          max="40"
+                          min="1"
+                          ng-model="RC.form.de.q1.d"
+                        />
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+              <div class="q2-de">
+                <span class="question-text">
+                  (2) Wie viele Jahre und Monate hielten Sie sich in den
+                  jeweiligen Sprachumgebungen auf:
+                </span>
+                <table>
+                  <thead>
+                    <tr>
+                      <th></th>
+                      <th>Jahre</th>
+                      <th>Monate</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td>In einem Land, in dem Deutsche gesprochen wird</td>
+                      <td>
+                        <input type="number" ng-model="RC.form.de.q2.a.year" />
+                      </td>
+                      <td>
+                        <input type="number" ng-model="RC.form.de.q2.a.month" />
+                      </td>
+                    </tr>
+                    <tr>
+                      <td>In einer Familie, in der Deutsche gesprochen wird</td>
+                      <td>
+                        <input type="number" ng-model="RC.form.de.q2.b.year" />
+                      </td>
+                      <td>
+                        <input type="number" ng-model="RC.form.de.q2.b.month" />
+                      </td>
+                    </tr>
+                    <tr>
+                      <td>
+                        In einer Schule/einem Arbeitsumfeld, in dem Deutsche
+                        gesprochen wird
+                      </td>
+                      <td>
+                        <input type="number" ng-model="RC.form.de.q2.c.year" />
+                      </td>
+                      <td>
+                        <input type="number" ng-model="RC.form.de.q2.c.month" />
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+              <div class="q3-de">
+                <span class="question-text">
+                  (3) Bitte bewerten Sie auf einer Skala von 0 bis 10 Ihre
+                  <i><u>Fähigkeiten</u></i> in Deutsche für die Bereiche
+                  Sprechen, Verstehen und Lesen. Verwenden Sie hierfür jeweils
+                  das Drop-Down-Menü:
+                </span>
+                <table>
+                  <tbody>
+                    <tr>
+                      <td>Sprechen</td>
+                      <td>
+                        <select
+                          style="width: 100%"
+                          ng-model="RC.form.de.q3.speaking"
+                          ng-options="opt for opt in RC.proficiency_scale"
+                        >
+                          <option value="">
+                            -- zur Bewertung hier klicken --
+                          </option>
+                        </select>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td>Lesen</td>
+                      <td>
+                        <select
+                          style="width: 100%"
+                          ng-model="RC.form.de.q3.reading"
+                          ng-options="opt for opt in RC.proficiency_scale"
+                        >
+                          <option value="">
+                            -- zur Bewertung hier klicken --
+                          </option>
+                        </select>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td>Verstehen gesprochener Sprache</td>
+                      <td>
+                        <select
+                          style="width: 100%"
+                          ng-model="RC.form.de.q3.understanding"
+                          ng-options="opt for opt in RC.proficiency_scale"
+                        >
+                          <option value="">
+                            -- zur Bewertung hier klicken --
+                          </option>
+                        </select>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+              <div class="q4-de">
+                <span class="question-text">
+                  (4) Bitte bewerten Sie auf einer Skala von 0 bis 10, wie hoch
+                  der Beitrag der folgenden Faktoren zum Spracherwerb von
+                  Deutsche war:
+                </span>
+                <table>
+                  <tbody>
+                    <tr>
+                      <td>Umgang mit Freunden</td>
+                      <td>
+                        <select
+                          style="width: 100%"
+                          ng-model="RC.form.de.q4.friends"
+                          ng-options="opt for opt in RC.contributing_factors"
+                        >
+                          <option value="">
+                            -- für Drop-Down-Menü hier klicken --
+                          </option>
+                        </select>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td>Umgang mit der Familie</td>
+                      <td>
+                        <select
+                          style="width: 100%"
+                          ng-model="RC.form.de.q4.family"
+                          ng-options="opt for opt in RC.contributing_factors"
+                        >
+                          <option value="">
+                            -- für Drop-Down-Menü hier klicken --
+                          </option>
+                        </select>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td>Lesen</td>
+                      <td>
+                        <select
+                          style="width: 100%"
+                          ng-model="RC.form.de.q4.reading"
+                          ng-options="opt for opt in RC.contributing_factors"
+                        >
+                          <option value="">
+                            -- für Drop-Down-Menü hier klicken --
+                          </option>
+                        </select>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td>Sprachlabor/Selbstunterricht</td>
+                      <td>
+                        <select
+                          style="width: 100%"
+                          ng-model="RC.form.de.q4.self_instructions"
+                          ng-options="opt for opt in RC.contributing_factors"
+                        >
+                          <option value="">
+                            -- für Drop-Down-Menü hier klicken --
+                          </option>
+                        </select>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td>Fernsehen</td>
+                      <td>
+                        <select
+                          style="width: 100%"
+                          ng-model="RC.form.de.q4.tv"
+                          ng-options="opt for opt in RC.contributing_factors"
+                        >
+                          <option value="">
+                            -- für Drop-Down-Menü hier klicken --
+                          </option>
+                        </select>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td>Radio hören</td>
+                      <td>
+                        <select
+                          style="width: 100%"
+                          ng-model="RC.form.de.q4.radio"
+                          ng-options="opt for opt in RC.contributing_factors"
+                        >
+                          <option value="">
+                            -- für Drop-Down-Menü hier klicken --
+                          </option>
+                        </select>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+              <div class="q5-de">
+                <span class="question-text">
+                  (5) Bitte bewerten Sie, in welchem Ausmaß Sie in Deutsche
+                  derzeit den folgenden Faktoren ausgesetzt sind:
+                </span>
+                <table>
+                  <tbody>
+                    <tr>
+                      <td>Umgang mit Freunden</td>
+                      <td>
+                        <select
+                          style="width: 100%"
+                          ng-model="RC.form.de.q5.friends"
+                          ng-options="opt for opt in RC.exposure"
+                        >
+                          <option value="">
+                            -- für Drop-Down-Menü hier klicken --
+                          </option>
+                        </select>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td>Umgang mit der Familie</td>
+                      <td>
+                        <select
+                          style="width: 100%"
+                          ng-model="RC.form.de.q5.family"
+                          ng-options="opt for opt in RC.exposure"
+                        >
+                          <option value="">
+                            -- für Drop-Down-Menü hier klicken --
+                          </option>
+                        </select>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td>Lesen</td>
+                      <td>
+                        <select
+                          style="width: 100%"
+                          ng-model="RC.form.de.q5.reading"
+                          ng-options="opt for opt in RC.exposure"
+                        >
+                          <option value="">
+                            -- für Drop-Down-Menü hier klicken --
+                          </option>
+                        </select>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td>Sprachlabor/Selbstunterricht</td>
+                      <td>
+                        <select
+                          style="width: 100%"
+                          ng-model="RC.form.de.q5.self_instructions"
+                          ng-options="opt for opt in RC.exposure"
+                        >
+                          <option value="">
+                            -- für Drop-Down-Menü hier klicken --
+                          </option>
+                        </select>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td>Fernsehen</td>
+                      <td>
+                        <select
+                          style="width: 100%"
+                          ng-model="RC.form.de.q5.tv"
+                          ng-options="opt for opt in RC.exposure"
+                        >
+                          <option value="">
+                            -- für Drop-Down-Menü hier klicken --
+                          </option>
+                        </select>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td>Radio hören</td>
+                      <td>
+                        <select
+                          style="width: 100%"
+                          ng-model="RC.form.de.q5.radio"
+                          ng-options="opt for opt in RC.exposure"
+                        >
+                          <option value="">
+                            -- für Drop-Down-Menü hier klicken --
+                          </option>
+                        </select>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+              <div class="q6-de">
+                <span class="question-text">
+                  (6) Wie stark ist Ihrer Meinung nach Ihr Akzent, wenn Sie
+                  Deutsche sprechen? </span
+                ><select
+                  style="width: 30%"
+                  ng-model="RC.form.de.q6"
+                  ng-options="opt for opt in RC.accent_perception"
+                >
+                  <option value="">
+                    -- für Drop-Down-Menü hier klicken --
+                  </option>
+                </select>
+              </div>
+              <div class="q7-de">
+                <span class="question-text">
+                  (7) Wie häufig werden Sie beim Deutsche Sprechen von anderen
+                  auf Grund Ihres Akzents als Nicht-Muttersprachler erkannt? </span
+                ><select
+                  style="width: 30%"
+                  ng-model="RC.form.de.q7"
+                  ng-options="opt for opt in RC.exposure"
+                >
+                  <option value="">
+                    -- für Drop-Down-Menü hier klicken --
+                  </option>
+                </select>
+              </div>
+            </div>
+            <button
+              ng-click="RC.nextScreen()"
+              style="float: right"
+              class="btn btn-default"
+              type="button"
+              ng-disabled="RC.validateScreenQuestions()"
+            >
+              Weiter
+            </button>
+          </div> -->
+          <div class="screen3" ng-if="RC.screen3">
+            <div class="container">
+              <h2>Sprache: Englisch</h2>
+              <span class="question-text">Dies ist meine</span>
+              <select
+                ng-model="RC.form.engCategory"
+                ng-options="opt for opt in RC.languageType"
+              >
+                <option value="">bitte aus dem Drop-Down-Menü wählen</option>
+              </select>
+              <span class="question-text"
+                >Alle folgenden Fragen beziehen sich auf Ihre Englisch
+                kenntnisse</span
+              >
+              <div class="q1-eng">
+                <span class="question-text">(1) Alter, in dem Sie…:</span>
+                <table border="1" cellpadding="18" cellspacing="0">
+                  <thead>
+                    <tr>
+                      <th>erlernten:</th>
+                      <th>anfingen fließend zu sprechen:</th>
+                      <th>anfingen, in zu lesen:</th>
+                      <th>anfingen, fließend in zu lesen:</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td>
+                        <input
+                          type="number"
+                          max="40"
+                          min="1"
+                          ng-model="RC.form.eng.q1.a"
+                        />
+                      </td>
+                      <td>
+                        <input
+                          type="number"
+                          max="40"
+                          min="1"
+                          ng-model="RC.form.eng.q1.b"
+                        />
+                      </td>
+                      <td>
+                        <input
+                          type="number"
+                          max="40"
+                          min="1"
+                          ng-model="RC.form.eng.q1.c"
+                        />
+                      </td>
+                      <td>
+                        <input
+                          type="number"
+                          max="40"
+                          min="1"
+                          ng-model="RC.form.eng.q1.d"
+                        />
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+              <div class="q2-eng">
+                <span class="question-text">
+                  (2) Wie viele Jahre und Monate hielten Sie sich in den
+                  jeweiligen Sprachumgebungen auf:
+                </span>
+                <table>
+                  <thead>
+                    <tr>
+                      <th></th>
+                      <th>Jahre</th>
+                      <th>Monate</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td>In einem Land, in dem Englisch gesprochen wird</td>
+                      <td>
+                        <input type="number" ng-model="RC.form.eng.q2.a.year" />
+                      </td>
+                      <td>
+                        <input
+                          type="number"
+                          ng-model="RC.form.eng.q2.a.month"
+                        />
+                      </td>
+                    </tr>
+                    <tr>
+                      <td>In einer Familie, in der Englisch gesprochen wird</td>
+                      <td>
+                        <input type="number" ng-model="RC.form.eng.q2.b.year" />
+                      </td>
+                      <td>
+                        <input
+                          type="number"
+                          ng-model="RC.form.eng.q2.b.month"
+                        />
+                      </td>
+                    </tr>
+                    <tr>
+                      <td>
+                        In einer Schule/einem Arbeitsumfeld, in dem Englisch
+                        gesprochen wird
+                      </td>
+                      <td>
+                        <input type="number" ng-model="RC.form.eng.q2.c.year" />
+                      </td>
+                      <td>
+                        <input
+                          type="number"
+                          ng-model="RC.form.eng.q2.c.month"
+                        />
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+              <div class="q3-eng">
+                <span class="question-text">
+                  (3) Bitte bewerten Sie auf einer Skala von 0 bis 10 Ihre
+                  <i><u>Fähigkeiten</u></i> in Englisch für die Bereiche
+                  Sprechen, Verstehen und Lesen. Verwenden Sie hierfür jeweils
+                  das Drop-Down-Menü:
+                </span>
+                <table>
+                  <tbody>
+                    <tr>
+                      <td>Sprechen</td>
+                      <td>
+                        <select
+                          style="width: 100%"
+                          ng-model="RC.form.eng.q3.speaking"
+                          ng-options="opt for opt in RC.proficiency_scale"
+                        >
+                          <option value="">
+                            -- zur Bewertung hier klicken --
+                          </option>
+                        </select>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td>Lesen</td>
+                      <td>
+                        <select
+                          style="width: 100%"
+                          ng-model="RC.form.eng.q3.reading"
+                          ng-options="opt for opt in RC.proficiency_scale"
+                        >
+                          <option value="">
+                            -- zur Bewertung hier klicken --
+                          </option>
+                        </select>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td>Verstehen gesprochener Sprache</td>
+                      <td>
+                        <select
+                          style="width: 100%"
+                          ng-model="RC.form.eng.q3.understanding"
+                          ng-options="opt for opt in RC.proficiency_scale"
+                        >
+                          <option value="">
+                            -- zur Bewertung hier klicken --
+                          </option>
+                        </select>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+              <div class="q4-eng">
+                <span class="question-text">
+                  (4) Bitte bewerten Sie auf einer Skala von 0 bis 10, wie hoch
+                  der Beitrag der folgenden Faktoren zum Spracherwerb von
+                  Englisch war:
+                </span>
+                <table>
+                  <tbody>
+                    <tr>
+                      <td>Umgang mit Freunden</td>
+                      <td>
+                        <select
+                          style="width: 100%"
+                          ng-model="RC.form.eng.q4.friends"
+                          ng-options="opt for opt in RC.contributing_factors"
+                        >
+                          <option value="">
+                            -- für Drop-Down-Menü hier klicken --
+                          </option>
+                        </select>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td>Umgang mit der Familie</td>
+                      <td>
+                        <select
+                          style="width: 100%"
+                          ng-model="RC.form.eng.q4.family"
+                          ng-options="opt for opt in RC.contributing_factors"
+                        >
+                          <option value="">
+                            -- für Drop-Down-Menü hier klicken --
+                          </option>
+                        </select>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td>Lesen</td>
+                      <td>
+                        <select
+                          style="width: 100%"
+                          ng-model="RC.form.eng.q4.reading"
+                          ng-options="opt for opt in RC.contributing_factors"
+                        >
+                          <option value="">
+                            -- für Drop-Down-Menü hier klicken --
+                          </option>
+                        </select>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td>Bildung</td>
+                      <td>
+                        <select
+                          style="width: 100%"
+                          ng-model="RC.form.eng.q4.education"
+                          ng-options="opt for opt in RC.contributing_factors"
+                        >
+                          <option value="">
+                            -- für Drop-Down-Menü hier klicken --
+                          </option>
+                        </select>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td>Sprachlabor/Selbstunterricht</td>
+                      <td>
+                        <select
+                          style="width: 100%"
+                          ng-model="RC.form.eng.q4.self_instructions"
+                          ng-options="opt for opt in RC.contributing_factors"
+                        >
+                          <option value="">
+                            -- für Drop-Down-Menü hier klicken --
+                          </option>
+                        </select>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td>Fernsehen</td>
+                      <td>
+                        <select
+                          style="width: 100%"
+                          ng-model="RC.form.eng.q4.tv"
+                          ng-options="opt for opt in RC.contributing_factors"
+                        >
+                          <option value="">
+                            -- für Drop-Down-Menü hier klicken --
+                          </option>
+                        </select>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td>Radio hören</td>
+                      <td>
+                        <select
+                          style="width: 100%"
+                          ng-model="RC.form.eng.q4.radio"
+                          ng-options="opt for opt in RC.contributing_factors"
+                        >
+                          <option value="">
+                            -- für Drop-Down-Menü hier klicken --
+                          </option>
+                        </select>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td>Internet</td>
+                      <td>
+                        <select
+                          style="width: 100%"
+                          ng-model="RC.form.eng.q4.internet"
+                          ng-options="opt for opt in RC.contributing_factors"
+                        >
+                          <option value="">
+                            -- für Drop-Down-Menü hier klicken --
+                          </option>
+                        </select>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+              <div class="q5-eng">
+                <span class="question-text">
+                  (5) Bitte bewerten Sie, in welchem Ausmaß Sie in Englisch
+                  derzeit den folgenden Faktoren ausgesetzt sind:
+                </span>
+                <table>
+                  <tbody>
+                    <tr>
+                      <td>Umgang mit Freunden</td>
+                      <td>
+                        <select
+                          style="width: 100%"
+                          ng-model="RC.form.eng.q5.friends"
+                          ng-options="opt for opt in RC.exposure"
+                        >
+                          <option value="">
+                            -- für Drop-Down-Menü hier klicken --
+                          </option>
+                        </select>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td>Umgang mit der Familie</td>
+                      <td>
+                        <select
+                          style="width: 100%"
+                          ng-model="RC.form.eng.q5.family"
+                          ng-options="opt for opt in RC.exposure"
+                        >
+                          <option value="">
+                            -- für Drop-Down-Menü hier klicken --
+                          </option>
+                        </select>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td>Lesen</td>
+                      <td>
+                        <select
+                          style="width: 100%"
+                          ng-model="RC.form.eng.q5.reading"
+                          ng-options="opt for opt in RC.exposure"
+                        >
+                          <option value="">
+                            -- für Drop-Down-Menü hier klicken --
+                          </option>
+                        </select>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td>Bildungseinrichtung/Arbeitsplatz</td>
+                      <td>
+                        <select
+                          style="width: 100%"
+                          ng-model="RC.form.eng.q5.workplace"
+                          ng-options="opt for opt in RC.exposure"
+                        >
+                          <option value="">
+                            -- für Drop-Down-Menü hier klicken --
+                          </option>
+                        </select>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td>Sprachlabor/Selbstunterricht</td>
+                      <td>
+                        <select
+                          style="width: 100%"
+                          ng-model="RC.form.eng.q5.self_instructions"
+                          ng-options="opt for opt in RC.exposure"
+                        >
+                          <option value="">
+                            -- für Drop-Down-Menü hier klicken --
+                          </option>
+                        </select>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td>Fernsehen</td>
+                      <td>
+                        <select
+                          style="width: 100%"
+                          ng-model="RC.form.eng.q5.tv"
+                          ng-options="opt for opt in RC.exposure"
+                        >
+                          <option value="">
+                            -- für Drop-Down-Menü hier klicken --
+                          </option>
+                        </select>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td>Radio hören</td>
+                      <td>
+                        <select
+                          style="width: 100%"
+                          ng-model="RC.form.eng.q5.radio"
+                          ng-options="opt for opt in RC.exposure"
+                        >
+                          <option value="">
+                            -- für Drop-Down-Menü hier klicken --
+                          </option>
+                        </select>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td>Internet</td>
+                      <td>
+                        <select
+                          style="width: 100%"
+                          ng-model="RC.form.eng.q5.internet"
+                          ng-options="opt for opt in RC.exposure"
+                        >
+                          <option value="">
+                            -- für Drop-Down-Menü hier klicken --
+                          </option>
+                        </select>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+              <!-- <div class="q6-eng">
+                <span class="question-text">
+                  (6) Wie stark ist Ihrer Meinung nach Ihr Akzent, wenn Sie
+                  Deutsche sprechen? </span
+                ><select
+                  style="width: 30%"
+                  ng-model="RC.form.eng.q6"
+                  ng-options="opt for opt in RC.accent_perception"
+                >
+                  <option value="">
+                    -- für Drop-Down-Menü hier klicken --
+                  </option>
+                </select>
+              </div>
+              <div class="q7-de">
+                <span class="question-text">
+                  (7) Wie häufig werden Sie beim Deutsche Sprechen von anderen
+                  auf Grund Ihres Akzents als Nicht-Muttersprachler erkannt? </span
+                ><select
+                  style="width: 30%"
+                  ng-model="RC.form.eng.q7"
+                  ng-options="opt for opt in RC.exposure"
+                >
+                  <option value="">
+                    -- für Drop-Down-Menü hier klicken --
+                  </option>
+                </select>
+              </div> -->
+            </div>
+            <button
+              ng-click="RC.nextScreen()"
+              style="float: right"
+              class="btn btn-default"
+              type="button"
+              ng-disabled="RC.validateScreenQuestions()"
+            >
+              Weiter
+            </button>
+          </div>
+        </div>
+      </div>
+      <!-- /the main content of the experiment goes here -->
+    </div>
+  </div>
+
+  <div
+    ng-if="RC.showMessage == 'nextSubList'"
+    style="
+      height: 100%;
+      width: 100%;
+      display: table;
+      position: absolute;
+      top: 0;
+      left: 0;
+    "
+  >
+    <div style="display: table-cell; height: 100%; vertical-align: middle">
+      <div style="width: 90%; margin: auto">
+        <!-- <this message is shown if a user successfully finished a sublist> -->
+        <div class="panel panel-primary">
+          <!-- <the message's heading> -->
+          <div
+            class="panel-heading"
+            style="font-weight: bolder"
+            id="nextSubList_title"
+          >
+            Actung:
+          </div>
+          <!-- </the message's heading> -->
+          <div class="panel-body">
+            <!-- <the message content> -->
+            <div id="nextSubList_message">
+              You've successfully completed a sublist. You may either stop here
+              or continue with another one.
+            </div>
+            <!-- </the message content. please don't edit the buttons below (except their label)> -->
+            <hr />
+            <button
+              ng-click="RC.processFinish()"
+              style="float: right; margin-left: 10px"
+              class="btn btn-default"
+              type="button"
+            >
+              Stop here
+            </button>
+            <button
+              ng-click="RC.nextSublist()"
+              style="float: right"
+              class="btn btn-default"
+              type="button"
+            >
+              Continue
+            </button>
+          </div>
+        </div>
+        <!-- </this message is shown if a user successfully finished a sublist> -->
+      </div>
+    </div>
+  </div>
+
+  <div
+    ng-if="RC.showMessage == 'goodBye'"
+    style="
+      height: 100%;
+      width: 100%;
+      display: table;
+      position: absolute;
+      top: 0;
+      left: 0;
+    "
+  >
+    <div style="display: table-cell; height: 100%; vertical-align: middle">
+      <div style="width: 90%; margin: auto">
+        <div class="panel panel-primary">
+          <div
+            id="goodBye_title"
+            class="panel-heading"
+            style="font-weight: bolder"
+          >
+            Actung:
+          </div>
+          <div class="panel-body">
+            <div id="goodBye_message">
+              Sie haben die Aufgabe erledigt. Vielen Dank für Ihre Teilnahme. Um
+              Ihre Einreichung abzugeben und zur nächsten Aufgabe zu gelangen,
+              klicken Sie unten auf den Button „Senden“.
+            </div>
+            <hr />
+            <button
+              ng-click="RC.finished()"
+              style="float: right"
+              class="btn btn-default"
+              type="button"
+            >
+              Senden
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
