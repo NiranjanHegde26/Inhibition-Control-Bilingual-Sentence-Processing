@@ -1,0 +1,69 @@
+.PennController-answer .option {
+    margin: 0em 1em;
+}
+
+#bod {
+    margin-top: 0;
+}
+
+.PennController-PennController {
+    width: 60em !important;
+    margin-left: calc(50vw - 30em);
+}
+
+.end {
+    align-content: center;
+    justify-content: center;
+}
+
+.panel {
+    width: 90%;
+    margin: auto;
+    background-color: #fff;
+}
+
+.panel-primary {
+    border: 1px solid transparent;
+    box-shadow: 0 1px 1px rgba(0, 0, 0, .05);
+    border-color: #337ab7;
+}
+
+.panel-heading {
+    padding: 10px 15px;
+    border-bottom: 1px solid transparent;
+    border-top-left-radius: 3px;
+    border-top-right-radius: 3px;
+    font-weight: bolder;
+    color: #fff;
+    background-color: #337ab7;
+    border-color: #337ab7;
+}
+
+a,
+a:hover,
+a:focus,
+a:active {
+    text-decoration: none;
+    color: inherit;
+}
+
+.panel-body {
+    padding: 15px;
+    font-size: 16px;
+}
+
+.btn-default:hover {
+    color: #333;
+    background-color: #e6e6e6;
+    border-color: #adadad;
+}
+
+.PennController-Controller.PennController-DashedSentence.DashedSentence-DashedSentence {
+    text-transform: uppercase;
+}
+
+.bar-container,
+.progress-text {
+    visibility: hidden;
+    margin: 0em;
+}

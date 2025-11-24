@@ -1,0 +1,9 @@
+Sentence,Condition,ItemID,Question,Answer,SentenceID
+"Pearson was waiting for the ice_cream but the waiter mistook his order and got him the milkshake instead",IH+TE,1,,,2
+"Jena had checked the drawer completely before realizing that her shiny earrings were stolen",C1+C2,2,,,2
+"Gomez wanted to visit his grandparents because he had to tell them about his engagement",C1+TE,3,Is Gomez getting engaged?,Yes,3
+"Georgia got an email from her manager warning her that she would be in trouble for her delayed submission of work",Filler,4,Did the manager write an email to congratulate Georgia for her work?,No,4
+"Daniella expected her students to actively participate in the workshop but none of them showed up to the venue",Filler,5,Were the students present in the workshop venue?,No,5
+"Justin was a highly athletic baseball player until a shoulder injury from an accident ended his career",Filler,6,Did the shoulder injury prevent Justin from playing baseball?,Yes,6
+"Christina found out about the breach in her office and immediately suspended the head of operations",C1+C2,2,,,7
+"Steven confronted his brother upon discovering that none of his toys could be found",C1+C2,2,,,8
