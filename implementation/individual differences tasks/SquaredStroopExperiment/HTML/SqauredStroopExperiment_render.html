@@ -1,0 +1,377 @@
+<div style="height: 100%; width: 100%; display: table">
+  <div
+    ng-if="RC.showMessage == 'none'"
+    style="display: table-cell; height: 100%; vertical-align: middle"
+  >
+    <div
+      ng-if="RC.state == 'instructionsSlide'"
+      class="panel panel-primary"
+      style="width: 90%; margin: auto"
+    >
+      <div class="panel-heading" style="font-weight: bolder">Anweisungen</div>
+      <div class="panel-body">
+        @_SHOW_INSTRUCTIONS_@
+        <p>
+          In dieser Aufgabe achtest du auf die Farbe des Wortes oben. Wähle
+          diese Farbe aus den beiden unten stehenden Optionen aus. Achte NICHT
+          auf das Wort oben oder die Farbe der beiden Wörter darunter. Die Farbe
+          des Wortes oben muss mit der Bedeutung des Wortes darunter
+          übereinstimmen. Beispiel: Ein Wort wird blau angezeigt. Wähle die
+          Option, die „blau“ bedeutet. Bitte schauen Sie sich auch das unten
+          gezeigte Bild genau an, da es die Aufgabe, das Zielreizwort und die
+          Antwortmöglichkeiten visuell veranschaulicht.
+        </p>
+        <div class="example">
+          <div class="imgs">
+            <img
+              src="/dynamicAssets/images/Experiments/SquaredStroopExperiment/Stroop2.png"
+              style="width: 50%"
+            />
+          </div>
+          <br />
+          <span
+            >Im obigen Bild ist das Reizwort beispielsweise rot gedruckt. Daher
+            ist die richtige Antwort die Option „ROT“. In diesem Fall ist die
+            richtige Option grün hervorgehoben.</span
+          ><br />
+          <br />
+          <div class="imgs">
+            <img
+              src="/dynamicAssets/images/Experiments/SquaredStroopExperiment/Stroop.png"
+              style="width: 50%"
+            />
+          </div>
+          <br />
+          <span
+            >Auch im zweiten Bild ist das Reizwort blau gedruckt. Daher ist die
+            richtige Antwort „BLAU“. In diesem Fall ist die richtige Option grün
+            hervorgehoben.</span
+          ><br />
+        </div>
+        <br />
+        <p>
+          Wir beginnen mit einem Probelauf. Du hast 30 Sekunden Zeit, um so
+          viele Punkte wie möglich zu erzielen. Während der Übungseinheiten
+          erhalten Sie außerdem Feedback zu Ihrer Antwort sowie eine Erinnerung
+          an die Aufgabe, falls Ihre Antwort falsch ist.
+        </p>
+        <p>
+          In der Hauptaufgabe haben Sie 90 Sekunden Zeit, so viele Punkte wie
+          möglich zu sammeln. Lesen Sie die Anweisungen jedoch sorgfältig durch,
+          bevor Sie mit der Übung beginnen, da diese anschließend nicht mehr
+          angezeigt werden und Sie nur Feedback zu Ihren Versuchen erhalten.
+        </p>
+        <p>
+          Wenn Ihnen die Ziele der Aufgabe klar sind, klicken Sie auf „Weiter“,
+          um mit der Übung zu beginnen.
+        </p>
+        <button
+          ng-click="RC.next()"
+          type="button"
+          class="btn btn-default"
+          style="float: right; margin-top: 20px"
+        >
+          Weiter
+        </button>
+      </div>
+    </div>
+
+    <div
+      ng-if="RC.state == 'workerIdSlide'"
+      class="panel panel-primary"
+      style="width: 90%; margin: auto"
+    >
+      <div class="panel-heading" style="font-weight: bolder">
+        Bitte geben Sie Ihre Prolific-ID in das Feld unten ein:
+      </div>
+      <div class="panel-body">
+        <input
+          id="workerId"
+          ng-model="RC.workerId"
+          name="workerId"
+          type="text"
+          class="form-control"
+          placeholder="enter here"
+        />
+        <button
+          ng-click="RC.next()"
+          type="button"
+          ng-disabled="RC.workerId == ''"
+          class="btn btn-default"
+          style="float: right; margin-top: 20px"
+        >
+          Weiter
+        </button>
+      </div>
+    </div>
+
+    <div ng-if="RC.state == 'statisticsSlide'">
+      <statistics-slide
+        statistics="RC.statistics"
+        click="RC.next"
+      ></statistics-slide>
+    </div>
+
+    <div
+      ng-if="RC.state == 'practiceEndSlide'"
+      class="panel panel-primary"
+      style="width: 90%; margin: auto"
+    >
+      <div class="panel-heading" style="font-weight: bolder">
+        Ende der Übungsversuche
+      </div>
+      <div class="panel-body">
+        Sie haben die Übungen erfolgreich abgeschlossen. Bitte beachten Sie,
+        dass die Anweisungen und Aufgabendetails in der Hauptaufgabe nicht
+        sichtbar sind. Klicken Sie auf „Weiter“, um mit der Hauptaufgabe zu
+        beginnen.
+        <button
+          ng-click="RC.next()"
+          type="button"
+          class="btn btn-default"
+          style="float: right; margin-top: 20px"
+        >
+          Weiter
+        </button>
+      </div>
+    </div>
+
+    <div
+      id="experiment_content"
+      ng-if="RC.state == 'questionSlide' && RC.questionIndex == $index"
+      ng-repeat="question in RC.questions track by $index"
+      style="width: 90%; margin: auto"
+    >
+      <!-- the main content of the experiment goes here -->
+      <div
+        id="experiment_panel_1"
+        class="panel"
+        style="border: 0px; box-shadow: none"
+      >
+        <div id="experiment_heading_1"></div>
+        <div id="experiment_body_1" class="panel-body">
+          <div class="container">
+            <div class="row">
+              <span>verbleibende Zeit:</span>
+              <div class="progress-container">
+                <div
+                  class="progress-bar"
+                  ng-style="{'width': (timeLeft / 90 * 100) + '%'}"
+                ></div>
+              </div>
+              <span>Punkte: {{score}}</span>
+            </div>
+            <div class="row" style="margin-bottom: 4em">
+              <span ng-style="{'color': question.stimColor}"
+                >{{question.stimWord}}</span
+              >
+            </div>
+            <div
+              class="row"
+              style="display: flex; justify-content: center; gap: 3em"
+            >
+              <button
+                type="button"
+                class="btn btn-default"
+                ng-style="{'color': question.leftColor, 'font-size':'30px'}"
+                ng-click="RC.saveAnswer('left')"
+              >
+                {{question.leftWord}}
+              </button>
+              <button
+                type="button"
+                class="btn btn-default"
+                ng-style="{'color': question.rightColor, 'font-size':'30px'}"
+                ng-click="RC.saveAnswer('right')"
+              >
+                {{question.rightWord}}
+              </button>
+            </div>
+            <div class="row">
+              <div class="feedback" ng-show="question['answer']">
+                <span ng-if="correct !== null && correct" style="color: Green"
+                  >Richtig &#10004;</span
+                >
+                <span ng-if="correct !== null && !correct" style="color: red"
+                  >Falsch &#10008;</span
+                >
+              </div>
+            </div>
+          </div>
+        </div>
+        <!-- /the main content of the experiment goes here -->
+      </div>
+    </div>
+
+    <div
+      id="experiment_content"
+      ng-if="RC.state == 'practiceSlide' && RC.practiceQuestionIndex == $index"
+      ng-repeat="question in RC.practiceTrialQuestions track by $index"
+      style="width: 90%; margin: auto"
+    >
+      <!-- the main content of the experiment goes here -->
+      <div
+        id="experiment_panel_1"
+        class="panel"
+        style="border: 0px; box-shadow: none"
+      >
+        <div id="experiment_heading_1"></div>
+        <div id="experiment_body_1" class="panel-body">
+          <div class="container">
+            <div class="row">
+              <span>verbleibende Zeit:</span>
+              <div class="progress-container">
+                <div
+                  class="progress-bar"
+                  ng-style="{'width': (practiceTimeLeft / 30 * 100) + '%'}"
+                ></div>
+              </div>
+              <span>Punkte: {{practiceScore}}</span>
+            </div>
+            <div class="row" style="margin-bottom: 4em">
+              <span ng-style="{'color': question.stimColor}"
+                >{{question.stimWord}}</span
+              >
+            </div>
+            <div
+              class="row"
+              style="display: flex; justify-content: center; gap: 3em"
+            >
+              <button
+                type="button"
+                class="btn btn-default"
+                ng-style="{'color': question.leftColor, 'font-size':'30px'}"
+                ng-click="RC.savePracticeAnswer('left')"
+              >
+                {{question.leftWord}}
+              </button>
+              <button
+                type="button"
+                class="btn btn-default"
+                ng-style="{'color': question.rightColor, 'font-size':'30px'}"
+                ng-click="RC.savePracticeAnswer('right')"
+              >
+                {{question.rightWord}}
+              </button>
+            </div>
+            <div class="row">
+              <div class="feedback" ng-show="question['answer']">
+                <span ng-if="correct !== null && correct" style="color: Green"
+                  >Richtig &#10004;</span
+                >
+                <span ng-if="correct !== null && !correct" style="color: red"
+                  >Falsch &#10008;</span
+                ><br />
+                <span ng-if="correct !== null && !correct" style="color: red"
+                  >Konzentriere dich auf die Tintenfarbe und ignoriere das
+                  geschriebene Wort.</span
+                >
+              </div>
+            </div>
+          </div>
+        </div>
+        <!-- /the main content of the experiment goes here -->
+      </div>
+    </div>
+  </div>
+  <div
+    ng-if="RC.showMessage == 'nextSubList'"
+    style="
+      height: 100%;
+      width: 100%;
+      display: table;
+      position: absolute;
+      top: 0;
+      left: 0;
+    "
+  >
+    <div style="display: table-cell; height: 100%; vertical-align: middle">
+      <div style="width: 90%; margin: auto">
+        <!-- <this message is shown if a user successfully finished a sublist> -->
+        <div class="panel panel-primary">
+          <!-- <the message's heading> -->
+          <div
+            class="panel-heading"
+            style="font-weight: bolder"
+            id="nextSubList_title"
+          >
+            Attention:
+          </div>
+          <!-- </the message's heading> -->
+          <div class="panel-body">
+            <!-- <the message content> -->
+            <div id="nextSubList_message">
+              You've successfully completed a sublist. You may either stop here
+              or continue with another one.
+            </div>
+            <!-- </the message content. please don't edit the buttons below (except their label)> -->
+            <hr />
+            <button
+              ng-click="RC.processFinish()"
+              style="float: right; margin-left: 10px"
+              class="btn btn-default"
+              type="button"
+            >
+              Stop here
+            </button>
+            <button
+              ng-click="RC.nextSublist()"
+              style="float: right"
+              class="btn btn-default"
+              type="button"
+            >
+              Continue
+            </button>
+          </div>
+        </div>
+        <!-- </this message is shown if a user successfully finished a sublist> -->
+      </div>
+    </div>
+  </div>
+  <div
+    ng-if="RC.showMessage == 'goodBye'"
+    style="
+      height: 100%;
+      width: 100%;
+      display: table;
+      position: absolute;
+      top: 0;
+      left: 0;
+    "
+  >
+    <div style="display: table-cell; height: 100%; vertical-align: middle">
+      <div style="width: 90%; margin: auto">
+        <div class="panel panel-primary">
+          <div
+            id="goodBye_title"
+            class="panel-heading"
+            style="font-weight: bolder"
+          >
+            Actung:
+          </div>
+          <div class="panel-body">
+            <div id="goodBye_message">
+              Haben Sie für diese Aufgabe insgesamt<span
+                style="font-size: 18px; font-weight: bold"
+              >
+                {{score}} </span
+              >Punkte erhalten. Gut gemacht! Sie haben die Aufgabe erledigt.
+              Vielen Dank für Ihre Teilnahme. Um Ihre Einreichung abzugeben und
+              zur nächsten Aufgabe zu gelangen, klicken Sie unten auf den Button
+              „Senden“.
+            </div>
+            <hr />
+            <button
+              ng-click="RC.finished()"
+              style="float: right"
+              class="btn btn-default"
+              type="button"
+            >
+              Senden
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

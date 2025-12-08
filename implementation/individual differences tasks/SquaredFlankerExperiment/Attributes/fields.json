@@ -1,0 +1,42 @@
+[
+    {
+        "type": "String",
+        "simpleTypeName": "String",
+        "name": "stim"
+    },
+    {
+        "type": "String",
+        "simpleTypeName": "String",
+        "name": "stimsign"
+    },
+    {
+        "type": "String",
+        "simpleTypeName": "String",
+        "name": "resp1"
+    },
+    {
+        "type": "String",
+        "simpleTypeName": "String",
+        "name": "resp1sign"
+    },
+    {
+        "type": "String",
+        "simpleTypeName": "String",
+        "name": "resp2"
+    },
+    {
+        "type": "String",
+        "simpleTypeName": "String",
+        "name": "resp2sign"
+    },
+    {
+        "type": "String",
+        "simpleTypeName": "String",
+        "name": "correctResponse"
+    },
+    {
+        "type": "String",
+        "simpleTypeName": "String",
+        "name": "condition"
+    }
+]

@@ -1,0 +1,42 @@
+[
+    {
+        "type": "String",
+        "simpleTypeName": "String",
+        "name": "stimWord"
+    },
+    {
+        "type": "String",
+        "simpleTypeName": "String",
+        "name": "stimColor"
+    },
+    {
+        "type": "String",
+        "simpleTypeName": "String",
+        "name": "leftWord"
+    },
+    {
+        "type": "String",
+        "simpleTypeName": "String",
+        "name": "leftColor"
+    },
+    {
+        "type": "String",
+        "simpleTypeName": "String",
+        "name": "rightWord"
+    },
+    {
+        "type": "String",
+        "simpleTypeName": "String",
+        "name": "rightColor"
+    },
+    {
+        "type": "String",
+        "simpleTypeName": "String",
+        "name": "response"
+    },
+    {
+        "type": "String",
+        "simpleTypeName": "String",
+        "name": "type"
+    }
+]

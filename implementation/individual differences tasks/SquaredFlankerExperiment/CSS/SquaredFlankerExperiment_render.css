@@ -1,0 +1,43 @@
+/* Fill in your CSS code here */
+.progress-container {
+    display: inline-block;
+    align-items: center;
+    align-content: center;
+    width: 50%;
+    background-color: #ddd;
+    height: 20px;
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+.progress-bar {
+    height: 100%;
+    background-color: #4caf50;
+    transition: width 0.5s linear;
+}
+
+.row {
+    align-items: center;
+    align-content: center;
+    margin-bottom: 1em;
+    min-height: 80px;
+}
+
+.container {
+    align-items: center;
+    align-content: center;
+    text-align: center;
+    font-size: 30px;
+}
+
+.feedback {
+    min-height: 80px;
+    display: inline-block;
+}
+
+.imgs {
+    display: flex;
+    align-items: center;
+    align-content: center;
+    justify-content: center;
+}
