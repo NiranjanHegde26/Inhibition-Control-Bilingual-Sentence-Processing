@@ -1,0 +1,601 @@
+```{r}
+# ============================================================
+# Title:    Raw data analysis and plotting Script
+# Project:  Individual Differences of Inhibition Control in Bilingual Sentence Processing: A Self Paced Reading Approach
+# OSF:      https://osf.io/uyvxw
+# Author:   Niranjana Hegde Bhimanakone Satyanarayana
+# Created:  13/01/2026
+# R version: 4.3.2
+#
+# Description:
+# This script uses the raw data of reading times for post-hoc analysis of Positions
+# P1 and P2. Later raw reading times are also plotted.
+#
+# Note:
+# In this file, following shorthand notations are used:
+#       - Base: Confirmatory Model
+#       - Exp: Exploratory Model
+#       - SO1 - Spillover 1
+#       - SO2 - Spillover 2
+# ============================================================
+```
+```{r}
+# Load libraries
+library(tidyr)
+library(ggplot2)
+library(dplyr)
+library(stringr)
+```
+```{r}
+# Load data frames
+p1_roi_df <- read.csv("D:/Studies/Thesis/Analysis/Inhibition-Control-Bilingual-Sentence-Processing/data/final analysis/P1_ROI.csv")
+p1_so1_df <- read.csv("D:/Studies/Thesis/Analysis/Inhibition-Control-Bilingual-Sentence-Processing/data/final analysis/P1_SO1.csv")
+p2_roi_df <- read.csv("D:/Studies/Thesis/Analysis/Inhibition-Control-Bilingual-Sentence-Processing/data/final analysis/P2_ROI.csv")
+p2_so1_df <- read.csv("D:/Studies/Thesis/Analysis/Inhibition-Control-Bilingual-Sentence-Processing/data/final analysis/P2_SO1.csv")
+```
+```{r}
+# Load models
+p1_roi_base_model <- readRDS("D:/Studies/Thesis/Analysis/P1_ROI_Base_lmer_no_slopes.rds")
+p1_roi_exp_model <- readRDS("D:/Studies/Thesis/Analysis/P1_ROI_Exp_lmer_no_slopes.rds")
+p1_so1_base_model <- readRDS("D:/Studies/Thesis/Analysis/P1_SO1_Base_lmer_no_slopes.rds")
+p1_so1_exp_model <- readRDS("D:/Studies/Thesis/Analysis/P1_SO1_Exp_lmer_no_slopes.rds")
+p1_so2_base_model <- readRDS("D:/Studies/Thesis/Analysis/P1_SO2_Base_lmer_no_slopes.rds")
+p1_so2_exp_model <- readRDS("D:/Studies/Thesis/Analysis/P1_SO2_Exp_lmer_no_slopes.rds")
+p2_roi_base_model <- readRDS("D:/Studies/Thesis/Analysis/P2_ROI_Base_lmer_no_slopes.rds")
+p2_roi_exp_model <- readRDS("D:/Studies/Thesis/Analysis/P2_ROI_Exp_lmer_no_slopes.rds")
+p2_so1_base_model <- readRDS("D:/Studies/Thesis/Analysis/P2_SO1_Base_lmer_no_slopes.rds")
+p2_so1_exp_model <- readRDS("D:/Studies/Thesis/Analysis/P2_SO1_Exp_lmer_no_slopes.rds")
+p2_so2_base_model <- readRDS("D:/Studies/Thesis/Analysis/P2_SO2_Base_lmer_no_slopes.rds")
+p2_so2_exp_model <- readRDS("D:/Studies/Thesis/Analysis/P2_SO2_Exp_lmer_no_slopes.rds")
+plot_path <- "D:/Studies/Thesis/Analysis/Inhibition-Control-Bilingual-Sentence-Processing/Plots/lmer/diagnostics"
+```
+```{r}
+# ============================================================
+# 1. Position P1
+# ============================================================
+```
+```{r}
+# ============================================================
+# Roadmap:
+#   a. Calculate mean difference (IH - C1) for each participant
+#   b. Calculate mean difference (IH - C1) for each item
+#   c. Position P1 Word types X Inhibition control
+# ============================================================
+```
+```{r}
+# ============================================================
+# a. Calculate mean difference (IH - C1) for each participant
+# ============================================================
+```
+```{r}
+# P1 ROI
+# Calculate mean difference (IH - C1) for each participant
+participant_effects <- p1_roi_df %>%
+    group_by(user_id, WordTypeP1) %>%
+    summarise(mean_logRT = mean(p1LogRT, na.rm = TRUE), .groups = "drop") %>%
+    pivot_wider(names_from = WordTypeP1, values_from = mean_logRT) %>%
+    mutate(interference_cost = IH - C1)
+
+# Plot individual differences
+ggplot(participant_effects, aes(x = reorder(user_id, interference_cost), y = interference_cost)) +
+    geom_point(size = 4, color = "#04a1fc") +
+    geom_hline(yintercept = 0, linetype = "dashed", color = "red") +
+    geom_hline(
+        yintercept = mean(participant_effects$interference_cost),
+        linetype = "solid", color = "blue", linewidth = 1
+    ) +
+    labs(
+        x = "Participant",
+        y = "Interference Cost (IH - C1)",
+        title = "Individual Participant Effects"
+    ) +
+    theme_minimal() +
+    theme(axis.text.x = element_text(angle = 90))
+
+# What percentage show IH > C1?
+sum(participant_effects$interference_cost > 0)
+mean(participant_effects$interference_cost)
+sd(participant_effects$interference_cost)
+```
+```{r}
+# P1 SO1
+# Calculate mean difference (IH - C1) for each participant
+participant_effects_so1 <- p1_so1_df %>%
+    group_by(user_id, WordTypeP1) %>%
+    summarise(mean_logRT = mean(p1LogRT, na.rm = TRUE), .groups = "drop") %>%
+    pivot_wider(names_from = WordTypeP1, values_from = mean_logRT) %>%
+    mutate(interference_cost = IH - C1)
+
+# Plot individual differences
+ggplot(participant_effects_so1, aes(x = reorder(user_id, interference_cost), y = interference_cost)) +
+    geom_point(size = 4, color = "#04a1fc") +
+    geom_hline(yintercept = 0, linetype = "dashed", color = "red") +
+    geom_hline(
+        yintercept = mean(participant_effects_so1$interference_cost),
+        linetype = "solid", color = "blue", linewidth = 1
+    ) +
+    labs(
+        x = "Participant",
+        y = "Interference Cost (IH - C1)",
+        title = "Individual Participant Effects"
+    ) +
+    theme_minimal() +
+    theme(axis.text.x = element_text(angle = 90))
+
+# What percentage show IH > C1?
+sum(participant_effects_so1$interference_cost > 0)
+mean(participant_effects_so1$interference_cost)
+sd(participant_effects_so1$interference_cost)
+```
+```{r}
+# P1 SO2
+# Calculate mean difference (IH - C1) for each participant
+p1_so2_df <- model.frame(p1_so2_base_model)
+participant_effects_so2 <- p1_so2_df %>%
+    group_by(user_id, WordTypeP1) %>%
+    summarise(mean_logRT = mean(p1LogRT, na.rm = TRUE), .groups = "drop") %>%
+    pivot_wider(names_from = WordTypeP1, values_from = mean_logRT) %>%
+    mutate(interference_cost = IH - C1)
+
+# Plot individual differences
+ggplot(participant_effects_so2, aes(x = reorder(user_id, interference_cost), y = interference_cost)) +
+    geom_point(size = 4, color = "#04a1fc") +
+    geom_hline(yintercept = 0, linetype = "dashed", color = "red") +
+    geom_hline(
+        yintercept = mean(participant_effects_so2$interference_cost),
+        linetype = "solid", color = "blue", linewidth = 1
+    ) +
+    labs(
+        x = "Participant",
+        y = "Interference Cost (IH - C1)",
+        title = "Individual Participant Effects"
+    ) +
+    theme_minimal() +
+    theme(axis.text.x = element_text(angle = 90))
+
+# What percentage show IH > C1?
+sum(participant_effects_so2$interference_cost > 0)
+mean(participant_effects_so2$interference_cost)
+sd(participant_effects_so2$interference_cost)
+```
+```{r}
+# ============================================================
+# b. Calculate mean difference (IH - C1) for each item
+# ============================================================
+```
+```{r}
+# P1 ROI
+# Calculate mean difference (IH - C1) for each item
+
+item_effects <- p1_roi_df %>%
+    group_by(ItemID, WordTypeP1) %>%
+    summarise(mean_logRT = mean(p1LogRT, na.rm = TRUE), .groups = "drop") %>%
+    pivot_wider(names_from = WordTypeP1, values_from = mean_logRT) %>%
+    mutate(interference_cost = IH - C1)
+
+# Plot individual differences
+ggplot(item_effects, aes(x = reorder(ItemID, interference_cost), y = interference_cost)) +
+    geom_point(size = 4, color = "#04a1fc") +
+    geom_hline(yintercept = 0, linetype = "dashed", color = "red") +
+    geom_hline(
+        yintercept = mean(item_effects$interference_cost),
+        linetype = "solid", color = "blue", linewidth = 1
+    ) +
+    labs(
+        x = "Participant",
+        y = "Interference Cost (IH - C1)",
+        title = "Individual Participant Effects"
+    ) +
+    theme_minimal() +
+    theme(axis.text.x = element_text(angle = 90))
+
+# What percentage show IH > C1?
+sum(item_effects$interference_cost > 0)
+mean(item_effects$interference_cost)
+sd(item_effects$interference_cost)
+```
+```{r}
+# P1 SO1
+# Calculate mean difference (IH - C1) for each item
+item_effects_so1 <- p1_so1_df %>%
+    group_by(ItemID, WordTypeP1) %>%
+    summarise(mean_logRT = mean(p1LogRT, na.rm = TRUE), .groups = "drop") %>%
+    pivot_wider(names_from = WordTypeP1, values_from = mean_logRT) %>%
+    mutate(interference_cost = IH - C1)
+
+# Plot individual differences
+ggplot(item_effects_so1, aes(x = reorder(ItemID, interference_cost), y = interference_cost)) +
+    geom_point(size = 4, color = "#04a1fc") +
+    geom_hline(yintercept = 0, linetype = "dashed", color = "red") +
+    geom_hline(
+        yintercept = mean(item_effects_so1$interference_cost),
+        linetype = "solid", color = "blue", linewidth = 1
+    ) +
+    labs(
+        x = "Participant",
+        y = "Interference Cost (IH - C1)",
+        title = "Individual Participant Effects"
+    ) +
+    theme_minimal() +
+    theme(axis.text.x = element_text(angle = 90))
+
+# What percentage show IH > C1?
+sum(item_effects_so1$interference_cost > 0)
+mean(item_effects_so1$interference_cost)
+sd(item_effects_so1$interference_cost)
+```
+```{r}
+# P1 SO2
+# Calculate mean difference (IH - C1) for each item
+p1_so2_df <- model.frame(p1_so2_base_model)
+item_effects_so2 <- p1_so2_df %>%
+    group_by(ItemID, WordTypeP1, ) %>%
+    summarise(mean_logRT = mean(p1LogRT, na.rm = TRUE), .groups = "drop") %>%
+    pivot_wider(names_from = WordTypeP1, values_from = mean_logRT) %>%
+    mutate(interference_cost = IH - C1)
+
+# Plot individual differences
+ggplot(item_effects_so2, aes(x = reorder(ItemID, interference_cost), y = interference_cost)) +
+    geom_point(size = 4, color = "#04a1fc") +
+    geom_hline(yintercept = 0, linetype = "dashed", color = "red") +
+    geom_hline(
+        yintercept = mean(item_effects_so2$interference_cost),
+        linetype = "solid", color = "blue", linewidth = 1
+    ) +
+    labs(
+        x = "Participant",
+        y = "Interference Cost (IH - C1)",
+        title = "Individual Participant Effects"
+    ) +
+    theme_minimal() +
+    theme(axis.text.x = element_text(angle = 90))
+
+# What percentage show IH > C1?
+sum(item_effects_so2$interference_cost > 0)
+mean(item_effects_so2$interference_cost)
+sd(item_effects_so2$interference_cost)
+```
+```{r}
+# ============================================================
+# c. Position P1 Word types X Inhibition control
+# ============================================================
+```
+```{r}
+inhib_effects <- p1_roi_df %>%
+    group_by(user_id, inhibition_control_score, WordTypeP1) %>%
+    summarise(mean_logRT = mean(p1LogRT, na.rm = TRUE), .groups = "drop") %>%
+    pivot_wider(names_from = WordTypeP1, values_from = mean_logRT) %>%
+    mutate(interference_cost = IH - C1)
+
+inhib_effects_roi <- ggplot(
+    inhib_effects,
+    aes(x = inhibition_control_score, y = interference_cost)
+) +
+    geom_point(size = 4, color = "#04a1fc") +
+    geom_smooth(method = "loess", se = TRUE, color = "#f707b7") +
+    geom_hline(yintercept = 0, linetype = "dashed", color = "red") +
+    labs(
+        x = "Inhibition Control Score",
+        y = "Mean Interference Cost (in log scale)",
+        title = str_wrap("Participant-Level Mean Interference Cost Across Inhibition Control at P1 ROI", width = 60)
+    ) +
+    theme_minimal(base_size = 12) +
+    theme(
+        plot.title = element_text(hjust = 0.5, size = 14),
+        legend.title = element_text(size = 8),
+        legend.text = element_text(size = 10)
+    )
+
+ggsave(filename = file.path(plot_path, "inhib_effects_roi.png"), inhib_effects_roi, width = 6, height = 6, dpi = 300)
+```
+```{r}
+inhib_effects_so1 <- p1_so1_df %>%
+    group_by(user_id, inhibition_control_score, WordTypeP1) %>%
+    summarise(mean_logRT = mean(p1LogRT, na.rm = TRUE), .groups = "drop") %>%
+    pivot_wider(names_from = WordTypeP1, values_from = mean_logRT) %>%
+    mutate(interference_cost = IH - C1)
+
+inhib_effects_so1_plt <- ggplot(
+    inhib_effects_so1,
+    aes(x = inhibition_control_score, y = interference_cost)
+) +
+    geom_point(size = 4, color = "#04a1fc") +
+    geom_smooth(method = "loess", se = TRUE, color = "#f707b7") +
+    geom_hline(yintercept = 0, linetype = "dashed", color = "red") +
+    labs(
+        x = "Inhibition Control Score",
+        y = "Mean Interference Cost (in log scale)",
+        title = str_wrap("Participant-Level Mean Interference Cost Across Inhibition Control at P1 Spillover 1", width = 60)
+    ) +
+    theme_minimal(base_size = 12) +
+    theme(
+        plot.title = element_text(hjust = 0.5, size = 14),
+        legend.title = element_text(size = 8),
+        legend.text = element_text(size = 10)
+    )
+ggsave(filename = file.path(plot_path, "inhib_effects_so1.png"), inhib_effects_so1_plt, width = 6, height = 6, dpi = 300)
+```
+```{r}
+inhib_effects_so2 <- p1_so2_df %>%
+    group_by(user_id, inhibition_control_score, WordTypeP1) %>%
+    summarise(mean_logRT = mean(p1LogRT, na.rm = TRUE), .groups = "drop") %>%
+    pivot_wider(names_from = WordTypeP1, values_from = mean_logRT) %>%
+    mutate(interference_cost = IH - C1)
+
+inhib_effects_so2_plt <- ggplot(
+    inhib_effects_so2,
+    aes(x = inhibition_control_score, y = interference_cost)
+) +
+    geom_point(size = 4, color = "#04a1fc") +
+    geom_smooth(method = "loess", se = TRUE, color = "#f707b7") +
+    geom_hline(yintercept = 0, linetype = "dashed", color = "red") +
+    labs(
+        x = "Inhibition Control Score",
+        y = "Mean Interference Cost (in log scale)",
+        title = str_wrap("Participant-Level Mean Interference Cost Across Inhibition Control at P1 Spillover 2", width = 60)
+    ) +
+    theme_minimal(base_size = 12) +
+    theme(
+        plot.title = element_text(hjust = 0.5, size = 14),
+        legend.title = element_text(size = 8),
+        legend.text = element_text(size = 10)
+    )
+ggsave(filename = file.path(plot_path, "inhib_effects_so2.png"), inhib_effects_so2_plt, width = 6, height = 6, dpi = 300)
+```
+```{r}
+# ============================================================
+# 1. Position P2
+# ============================================================
+```
+```{r}
+# ============================================================
+# Roadmap:
+#   a. Calculate mean difference of TE processing when P1 = IH vs P1 = C1
+#   b. Mean difference of TE processing when P1 = IH vs P1 = C1 X Inhibition control
+#   c. Participants with positive interference cost, and then reference it with their TE processing cost
+# ============================================================
+```
+```{r}
+# ============================================================
+# a. Calculate mean difference of TE processing when P1 = IH vs P1 = C1
+# ============================================================
+```
+```{r}
+te_c2_ih_contrast_roi <- p2_roi_df %>%
+    filter(ConditionP2 == "TE") %>% # Keep only TE trials
+    group_by(user_id, WordTypeP1) %>%
+    summarise(mean_RT = mean(p2LogRT, na.rm = TRUE), .groups = "drop") %>% # Compute mean RT per user and WordTypeP1
+    pivot_wider(names_from = WordTypeP1, values_from = mean_RT) %>% # Spread WordTypeP1 into columns so we can subtract
+    mutate(diff = IH - C1) # Processing cost
+
+sum(te_c2_ih_contrast_roi$diff > 0)
+sd(te_c2_ih_contrast_roi$diff)
+mean(te_c2_ih_contrast_roi$diff)
+```
+```{r}
+te_c2_ih_contrast_so1 <- p2_so1_df %>%
+    filter(ConditionP2 == "TE") %>% # Keep only TE trials
+    group_by(user_id, WordTypeP1) %>%
+    summarise(mean_RT = mean(p2LogRT, na.rm = TRUE), .groups = "drop") %>% # Compute mean RT per user and WordTypeP1
+    pivot_wider(names_from = WordTypeP1, values_from = mean_RT) %>% # Spread WordTypeP1 into columns so we can subtract
+    mutate(diff = IH - C1) # Processing cost
+
+sum(te_c2_ih_contrast_so1$diff > 0)
+sd(te_c2_ih_contrast_so1$diff)
+mean(te_c2_ih_contrast_so1$diff)
+```
+```{r}
+p2_so2_df <- model.frame(p2_so2_base_model)
+te_c2_ih_contrast_so2 <- p2_so2_df %>%
+    filter(ConditionP2 == "TE") %>% # Keep only TE trials
+    group_by(user_id, WordTypeP1) %>%
+    summarise(mean_RT = mean(p2LogRT, na.rm = TRUE), .groups = "drop") %>% # Compute mean RT per user and WordTypeP1
+    pivot_wider(names_from = WordTypeP1, values_from = mean_RT) %>% # Spread WordTypeP1 into columns so we can subtract
+    mutate(diff = IH - C1) # Processing cost
+
+sum(te_c2_ih_contrast_so2$diff > 0)
+sd(te_c2_ih_contrast_so2$diff)
+mean(te_c2_ih_contrast_so2$diff)
+```
+```{r}
+# ============================================================
+# b. Mean difference of TE processing when P1 = IH vs P1 = C1 X Inhibition control
+# ============================================================
+```
+```{r}
+te_c2_ih_contrast_inhib_roi <- p2_roi_df %>%
+    filter(ConditionP2 == "TE") %>% # Keep only TE trials
+    group_by(inhibition_control_score, WordTypeP1) %>%
+    summarise(mean_RT = mean(p2LogRT, na.rm = TRUE), .groups = "drop") %>% # Compute mean RT per user and WordTypeP1
+    pivot_wider(names_from = WordTypeP1, values_from = mean_RT) %>% # Spread WordTypeP1 into columns so we can subtract
+    mutate(diff = IH - C1) # Processing cost
+te_c2_ih_contrast_inhib_roi_plt <- ggplot(te_c2_ih_contrast_inhib_roi, aes(x = inhibition_control_score, y = diff)) +
+    geom_point(size = 4, color = "#04a1fc") +
+    geom_hline(yintercept = 0, linetype = "dashed", color = "red") +
+    geom_smooth(method = "loess", se = TRUE, color = "#f707b7") +
+    labs(
+        x = "Inhibition Control Score",
+        y = "Mean TE Processing Cost (in log scale)",
+        title = str_wrap("Participant-Level Mean TE Processing Cost Across Inhibition Control for P1 Word Type = IH at P2 ROI", width = 60)
+    ) +
+    theme_minimal(base_size = 12) +
+    theme(
+        plot.title = element_text(hjust = 0.5, size = 14),
+        legend.title = element_text(size = 8),
+        legend.text = element_text(size = 10)
+    )
+ggsave(filename = file.path(plot_path, "te_c2_ih_contrast_inhib_roi_plt.png"), te_c2_ih_contrast_inhib_roi_plt, width = 6, height = 6, dpi = 300)
+```
+```{r}
+te_c2_ih_contrast_inhib_so1 <- p2_so1_df %>%
+    filter(ConditionP2 == "TE") %>% # Keep only TE trials
+    group_by(inhibition_control_score, WordTypeP1) %>%
+    summarise(mean_RT = mean(p2LogRT, na.rm = TRUE), .groups = "drop") %>% # Compute mean RT per user and WordTypeP1
+    pivot_wider(names_from = WordTypeP1, values_from = mean_RT) %>% # Spread WordTypeP1 into columns so we can subtract
+    mutate(diff = IH - C1) # Processing cost
+te_c2_ih_contrast_inhib_so1_plt <- ggplot(te_c2_ih_contrast_inhib_so1, aes(x = inhibition_control_score, y = diff)) +
+    geom_point(size = 4, color = "#04a1fc") +
+    geom_smooth(method = "loess", se = TRUE, color = "#f707b7") +
+    geom_hline(yintercept = 0, linetype = "dashed", color = "red") +
+    labs(
+        x = "Inhibition Control Score",
+        y = "Mean TE Processing Cost (in log scale)",
+        title = str_wrap("Participant-Level Mean TE Processing Cost Across Inhibition Control for P1 Word Type = IH at P2 Spillover 1", width = 60)
+    ) +
+    theme_minimal(base_size = 12) +
+    theme(
+        plot.title = element_text(hjust = 0.5, size = 14),
+        legend.title = element_text(size = 8),
+        legend.text = element_text(size = 10)
+    )
+ggsave(filename = file.path(plot_path, "te_c2_ih_contrast_inhib_so1_plt.png"), te_c2_ih_contrast_inhib_so1_plt, width = 6, height = 6, dpi = 300)
+```
+```{r}
+te_c2_ih_contrast_inhib_so2 <- p2_so2_df %>%
+    filter(ConditionP2 == "TE") %>% # Keep only TE trials
+    group_by(inhibition_control_score, WordTypeP1) %>%
+    summarise(mean_RT = mean(p2LogRT, na.rm = TRUE), .groups = "drop") %>% # Compute mean RT per user and WordTypeP1
+    pivot_wider(names_from = WordTypeP1, values_from = mean_RT) %>% # Spread WordTypeP1 into columns so we can subtract
+    mutate(diff = IH - C1) # Processing cost
+te_c2_ih_contrast_inhib_so2_plt <- ggplot(te_c2_ih_contrast_inhib_so2, aes(x = inhibition_control_score, y = diff)) +
+    geom_point(size = 4, color = "#04a1fc") +
+    geom_smooth(method = "loess", se = TRUE, color = "#f707b7") +
+    geom_hline(yintercept = 0, linetype = "dashed", color = "red") +
+    labs(
+        x = "Inhibition Control Score",
+        y = "Mean TE Processing Cost (in log scale)",
+        title = str_wrap("Participant-Level Mean TE Processing Cost Across Inhibition Control for P1 Word Type = IH at P2 Spillover 2", width = 60)
+    ) +
+    theme_minimal(base_size = 12) +
+    theme(
+        plot.title = element_text(hjust = 0.5, size = 14),
+        legend.title = element_text(size = 8),
+        legend.text = element_text(size = 10)
+    )
+ggsave(filename = file.path(plot_path, "te_c2_ih_contrast_inhib_so2_plt.png"), te_c2_ih_contrast_inhib_so2_plt, width = 6, height = 6, dpi = 300)
+```
+```{r}
+# ============================================================
+# c. Participants with positive interference cost, and then reference it with their TE processing cost
+# ============================================================
+```
+```{r}
+# Select the users with positive interference cost, and check how it fares with TE processing cost.
+# This will enable us to see how participants processed P2 = TE when they had higher reading times at IH than C1
+
+# ROI
+participant_effects_positive_cost <- participant_effects[participant_effects$interference_cost > 0, ]
+print(paste0("Total participants with positive interference cost at P1 ROI:", nrow(participant_effects_positive_cost)))
+te_c2_ih_contrast_roi_based_on_p1 <- te_c2_ih_contrast_roi %>%
+    filter(user_id %in% participant_effects_positive_cost$user_id) %>%
+    left_join(
+        participant_effects_positive_cost %>% select(user_id, interference_cost),
+        by = "user_id"
+    ) %>%
+    mutate(over_diff = interference_cost - diff)
+
+print(paste0("Total participants with positive TE Processing cost at P2 ROI:", sum(te_c2_ih_contrast_roi_based_on_p1$diff > 0)))
+cor.test(
+    te_c2_ih_contrast_roi_based_on_p1$interference_cost,
+    te_c2_ih_contrast_roi_based_on_p1$diff
+)
+
+te_c2_ih_contrast_roi_based_on_p1 <- te_c2_ih_contrast_roi_based_on_p1 %>%
+    left_join(p1_roi_df %>% select(user_id, inhibition_control_score), by = "user_id")
+
+# Plot against inhibition control score
+p1_p2_compare_roi_plt <- ggplot(te_c2_ih_contrast_roi_based_on_p1, aes(x = inhibition_control_score, y = diff)) +
+    geom_point(size = 4, color = "#04a1fc") +
+    geom_smooth(method = "loess", se = TRUE, color = "#f707b7") +
+    geom_hline(yintercept = 0, linetype = "dashed", color = "red") +
+    labs(
+        x = "Inhibition Control Score",
+        y = "Mean TE Processing Cost (in log scale)",
+        title = str_wrap("P2 ROI TE Processing Cost as a Function of Inhibition Control for Participants with Positive P1 ROI Interference Costs (n = 34)", width = 60)
+    ) +
+    theme_minimal(base_size = 12) +
+    theme(
+        plot.title = element_text(hjust = 0.5, size = 13),
+        legend.title = element_text(size = 8),
+        legend.text = element_text(size = 10)
+    )
+ggsave(filename = file.path(plot_path, "p1_p2_compare_roi_plt.png"), p1_p2_compare_roi_plt, width = 6, height = 6, dpi = 300)
+```
+```{r}
+# SO1
+participant_effects_positive_cost_so1 <- participant_effects_so1[participant_effects_so1$interference_cost > 0, ]
+print(paste0("Total participants with positive interference cost at P1 Spillover 1:", nrow(participant_effects_positive_cost_so1)))
+te_c2_ih_contrast_so1_based_on_p1 <- te_c2_ih_contrast_roi %>%
+    filter(user_id %in% participant_effects_positive_cost_so1$user_id) %>%
+    left_join(
+        participant_effects_positive_cost_so1 %>% select(user_id, interference_cost),
+        by = "user_id"
+    ) %>%
+    mutate(over_diff = interference_cost - diff)
+
+print(paste0("Total participants with positive TE Processing cost at P2 Spillover 1:", sum(te_c2_ih_contrast_so1_based_on_p1$diff > 0)))
+cor.test(
+    te_c2_ih_contrast_so1_based_on_p1$interference_cost,
+    te_c2_ih_contrast_so1_based_on_p1$diff
+)
+
+te_c2_ih_contrast_so1_based_on_p1 <- te_c2_ih_contrast_so1_based_on_p1 %>%
+    left_join(p1_roi_df %>% select(user_id, inhibition_control_score), by = "user_id")
+
+# Plot against inhibition control score
+p1_p2_compare_so1_plt <- ggplot(te_c2_ih_contrast_so1_based_on_p1, aes(x = inhibition_control_score, y = diff)) +
+    geom_point(size = 4, color = "#04a1fc") +
+    geom_smooth(method = "loess", se = TRUE, color = "#f707b7") +
+    geom_hline(yintercept = 0, linetype = "dashed", color = "red") +
+    labs(
+        x = "Inhibition Control Score",
+        y = "Mean TE Processing Cost (in log scale)",
+        title = str_wrap("P2 Spillover 1 TE Processing Cost as a Function of Inhibition Control for Participants with Positive P1 Spillover 1 Interference Costs (n = 31)", width = 60)
+    ) +
+    theme_minimal(base_size = 12) +
+    theme(
+        plot.title = element_text(hjust = 0.5, size = 13),
+        legend.title = element_text(size = 8),
+        legend.text = element_text(size = 10)
+    )
+ggsave(filename = file.path(plot_path, "p1_p2_compare_so1_plt.png"), p1_p2_compare_so1_plt, width = 6, height = 6, dpi = 300)
+```
+```{r}
+# SO2
+participant_effects_positive_cost_so2 <- participant_effects_so2[participant_effects_so2$interference_cost > 0, ]
+print(paste0("Total participants with positive interference cost at P1 Spillover 2:", nrow(participant_effects_positive_cost_so2)))
+te_c2_ih_contrast_so2_based_on_p1 <- te_c2_ih_contrast_roi %>%
+    filter(user_id %in% participant_effects_positive_cost_so2$user_id) %>%
+    left_join(
+        participant_effects_positive_cost_so2 %>% select(user_id, interference_cost),
+        by = "user_id"
+    ) %>%
+    mutate(over_diff = interference_cost - diff)
+
+print(paste0("Total participants with positive TE Processing cost at P2 Spillover 2:", sum(te_c2_ih_contrast_so2_based_on_p1$diff > 0)))
+cor.test(
+    te_c2_ih_contrast_so2_based_on_p1$interference_cost,
+    te_c2_ih_contrast_so2_based_on_p1$diff
+)
+
+te_c2_ih_contrast_so2_based_on_p1 <- te_c2_ih_contrast_so2_based_on_p1 %>%
+    left_join(p1_roi_df %>% select(user_id, inhibition_control_score), by = "user_id")
+
+# Plot against inhibition control score
+p1_p2_compare_so2_plt <- ggplot(te_c2_ih_contrast_so2_based_on_p1, aes(x = inhibition_control_score, y = diff)) +
+    geom_point(size = 4, color = "#04a1fc") +
+    geom_smooth(method = "loess", se = TRUE, color = "#f707b7") +
+    geom_hline(yintercept = 0, linetype = "dashed", color = "red") +
+    labs(
+        x = "Inhibition Control Score",
+        y = "Mean TE Processing Cost (in log scale)",
+        title = str_wrap("P2 Spillover 2 TE Processing Cost as a Function of Inhibition Control for Participants with Positive P1 Spillover 2 Interference Costs (n = 35)", width = 60)
+    ) +
+    theme_minimal(base_size = 12) +
+    theme(
+        plot.title = element_text(hjust = 0.5, size = 13),
+        legend.title = element_text(size = 8),
+        legend.text = element_text(size = 10)
+    )
+ggsave(filename = file.path(plot_path, "p1_p2_compare_so2_plt.png"), p1_p2_compare_so2_plt, width = 6, height = 6, dpi = 300)
+```

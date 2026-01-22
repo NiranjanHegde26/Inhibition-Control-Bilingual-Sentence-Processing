@@ -1,15 +1,23 @@
-"
-    Author: Niranjana Hegde B S
-    Date of Creation: Nov 02, 2025
-    This script goes through the materials and reports the basic descriptive statistics with regards to:
-        - Sentence length
-        - P1 word length
-        - P2 word length
-        - Phrase length before P1
-        - Phrase length between P1 and P2 (reported as the lag)
-        - Phrase length after P2
-        - Difference beween P1-before-phrase and P2-after-phrase lengths
-"
+# ============================================================
+# Title:    Sentence Descriptive Statistics Script
+# Project:  Individual Differences of Inhibition Control in Bilingual Sentence Processing: A Self Paced Reading Approach
+# OSF:      https://osf.io/uyvxw
+# Author:   Niranjana Hegde Bhimanakone Satyanarayana
+# Created:  02/11/2025
+# R version: 4.3.2
+#
+# Description:
+# This script goes through the materials and reports the basic descriptive statistics with regards to:
+#        - Sentence length
+#        - P1 word length
+#        - P2 word length
+#        - Phrase length before P1
+#        - Phrase length between P1 and P2 (reported as the lag)
+#        - Phrase length after P2
+#        - Difference beween P1-before-phrase and P2-after-phrase lengths
+# ============================================================
+
+# Load libraries
 library(dpylr)
 library(ggplot2)
 
@@ -24,6 +32,7 @@ critical_items_df$SentenceLength <- str_count(critical_items_df$Sentence, "\\S+"
 summary(critical_items_df$SentenceLength)
 sd(critical_items_df$SentenceLength)
 
+# Fillers
 fillers_df$SentenceLength <- str_count(fillers_df$Sentence, "\\S+")
 summary(fillers_df$SentenceLength)
 sd(fillers_df$SentenceLength)

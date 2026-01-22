@@ -1,0 +1,326 @@
+```{r}
+# ============================================================
+# Title:    Statistical Model Diagnostics and Post-hoc Analysis Script
+# Project:  Individual Differences of Inhibition Control in Bilingual Sentence Processing: A Self Paced Reading Approach
+# OSF:      https://osf.io/uyvxw
+# Author:   Niranjana Hegde Bhimanakone Satyanarayana
+# Created:  25/12/2025
+# R version: 4.3.2
+#
+# Description:
+# This script uses model diagnostic libraries to check the model fit,
+# post-hoc analysis for Position P1 an P2.
+#
+# Note:
+# In this file, following shorthand notations are used:
+#       - Base: Confirmatory Model
+#       - Exp: Exploratory Model
+#       - SO1 - Spillover 1
+#       - SO2 - Spillover 2
+# ============================================================
+```
+```{r}
+# Importing the libraries
+library(tidyr)
+library(stringr)
+library(ggplot2)
+library(dplyr)
+library(influence.ME)
+library(ggeffects)
+library(emmeans)
+library(lme4)
+library(lmerTest)
+library(DHARMa)
+```
+```{r}
+# Load the models and dataframes
+p1_roi_base_model <- readRDS("D:/Studies/Thesis/Analysis/P1_ROI_Base_lmer_no_slopes.rds")
+p1_roi_exp_model <- readRDS("D:/Studies/Thesis/Analysis/P1_ROI_Exp_lmer_no_slopes.rds")
+p1_so1_base_model <- readRDS("D:/Studies/Thesis/Analysis/P1_SO1_Base_lmer_no_slopes.rds")
+p1_so1_exp_model <- readRDS("D:/Studies/Thesis/Analysis/P1_SO1_Exp_lmer_no_slopes.rds")
+p1_so2_base_model <- readRDS("D:/Studies/Thesis/Analysis/P1_SO2_Base_lmer_no_slopes.rds")
+p1_so2_exp_model <- readRDS("D:/Studies/Thesis/Analysis/P1_SO2_Exp_lmer_no_slopes.rds")
+p2_roi_base_model <- readRDS("D:/Studies/Thesis/Analysis/P2_ROI_Base_lmer_no_slopes.rds")
+p2_roi_exp_model <- readRDS("D:/Studies/Thesis/Analysis/P2_ROI_Exp_lmer_no_slopes.rds")
+p2_so1_base_model <- readRDS("D:/Studies/Thesis/Analysis/P2_SO1_Base_lmer_no_slopes.rds")
+p2_so1_exp_model <- readRDS("D:/Studies/Thesis/Analysis/P2_SO1_Exp_lmer_no_slopes.rds")
+p2_so2_base_model <- readRDS("D:/Studies/Thesis/Analysis/P2_SO2_Base_lmer_no_slopes.rds")
+p2_so2_exp_model <- readRDS("D:/Studies/Thesis/Analysis/P2_SO2_Exp_lmer_no_slopes.rds")
+p1_roi_df <- read.csv("D:/Studies/Thesis/Analysis/Inhibition-Control-Bilingual-Sentence-Processing/data/final analysis/P1_ROI.csv")
+p1_so1_df <- read.csv("D:/Studies/Thesis/Analysis/Inhibition-Control-Bilingual-Sentence-Processing/data/final analysis/P1_SO1.csv")
+p2_roi_df <- read.csv("D:/Studies/Thesis/Analysis/Inhibition-Control-Bilingual-Sentence-Processing/data/final analysis/P2_ROI.csv")
+p2_so1_df <- read.csv("D:/Studies/Thesis/Analysis/Inhibition-Control-Bilingual-Sentence-Processing/data/final analysis/P2_SO1.csv")
+plot_path <- "D:/Studies/Thesis/Analysis/Inhibition-Control-Bilingual-Sentence-Processing/Plots/lmer/outliers"
+```
+```{r}
+# ============================================================
+# 1. Position P1 Models
+# ============================================================
+```
+```{r}
+# P1 ROI Model
+# Create simulation output
+simulationOutput_p1_roi_base_model <- simulateResiduals(p1_roi_base_model)
+
+# nSim = 1000
+threshold_lower <- 1 / (1000 + 1)
+threshold_upper <- 1 - threshold_lower
+
+outlier_indices <- which(
+    simulationOutput_p1_roi_base_model$scaledResiduals < threshold_lower |
+        simulationOutput_p1_roi_base_model$scaledResiduals > threshold_upper
+)
+
+data_model <- model.frame(p1_roi_base_model)
+data_clean_p1_roi_base <- data_model[-outlier_indices, ]
+
+model_clean_p1_roi_base <- update(p1_roi_base_model, data = data_clean_p1_roi_base)
+summary(model_clean_p1_roi_base)
+```
+```{r}
+# P1 ROI Model - Exp
+simulationOutput_p1_roi_exp_model <- simulateResiduals(p1_roi_exp_model)
+
+threshold_lower <- 1 / (1000 + 1)
+threshold_upper <- 1 - threshold_lower
+
+outlier_indices <- which(
+    simulationOutput_p1_roi_exp_model$scaledResiduals < threshold_lower |
+        simulationOutput_p1_roi_exp_model$scaledResiduals > threshold_upper
+)
+
+data_model <- model.frame(p1_roi_exp_model)
+data_clean_p1_roi_base <- data_model[-outlier_indices, ]
+
+model_clean_p1_roi_exp <- update(p1_roi_exp_model, data = data_clean_p1_roi_base)
+summary(model_clean_p1_roi_exp)
+```
+```{r}
+# P1 SO1 Base Model
+simulationOutput_p1_so1_base_model <- simulateResiduals(p1_so1_base_model)
+
+threshold_lower <- 1 / (1000 + 1)
+threshold_upper <- 1 - threshold_lower
+
+outlier_indices <- which(
+    simulationOutput_p1_so1_base_model$scaledResiduals < threshold_lower |
+        simulationOutput_p1_so1_base_model$scaledResiduals > threshold_upper
+)
+
+data_model <- model.frame(p1_so1_base_model)
+data_clean_p1_so1_base <- data_model[-outlier_indices, ]
+
+model_clean_p1_so1_base <- update(p1_so1_base_model, data = data_clean_p1_so1_base)
+summary(model_clean_p1_so1_base)
+```
+```{r}
+# P1 SO1 Model - Exp
+simulationOutput_p1_so1_exp_model <- simulateResiduals(p1_so1_exp_model)
+
+threshold_lower <- 1 / (1000 + 1)
+threshold_upper <- 1 - threshold_lower
+
+outlier_indices <- which(
+    simulationOutput_p1_so1_exp_model$scaledResiduals < threshold_lower |
+        simulationOutput_p1_so1_exp_model$scaledResiduals > threshold_upper
+)
+
+data_model <- model.frame(p1_so1_exp_model)
+data_clean_p1_so1_base <- data_model[-outlier_indices, ]
+
+model_clean_p1_so1_exp <- update(p1_so1_exp_model, data = data_clean_p1_so1_base)
+summary(model_clean_p1_so1_exp)
+```
+```{r}
+# P1 SO2 Base Model
+simulationOutput_p1_so2_base_model <- simulateResiduals(p1_so2_base_model)
+
+threshold_lower <- 1 / (1000 + 1)
+threshold_upper <- 1 - threshold_lower
+
+outlier_indices <- which(
+    simulationOutput_p1_so2_base_model$scaledResiduals < threshold_lower |
+        simulationOutput_p1_so2_base_model$scaledResiduals > threshold_upper
+)
+
+data_model <- model.frame(p1_so2_base_model)
+data_clean_p1_so2_base <- data_model[-outlier_indices, ]
+
+model_clean_p1_so2_base <- update(p1_so2_base_model, data = data_clean_p1_so2_base)
+summary(model_clean_p1_so2_base)
+
+model_clean_p1_so2_base_pred <- as.data.frame(ggpredict(model_clean_p1_so2_base, terms = c("WordTypeP1", "inhibition_control_score [all]"), type = "fixed", bias_correction = TRUE))
+model_clean_p1_so2_base_pred$group <- as.numeric(as.character(model_clean_p1_so2_base_pred$group))
+
+outlier_p1_so2_base_p1_inhib_plot <- ggplot(model_clean_p1_so2_base_pred, aes(x = group, y = predicted, color = x)) +
+    geom_line(size = 1) +
+    geom_ribbon(aes(ymin = conf.low, ymax = conf.high, fill = x), alpha = 0.2, color = NA) +
+    labs(
+        x = "Inhibition Control Score (Scaled)",
+        y = "Predicted Log Reading Time",
+        title = str_wrap("Predicted log reading times of P1 Word Types at P1 Spillover 2 based on Inhibition Control Score (Confirmatory Model)", width = 60),
+        color = "P1 Word Types",
+        fill = "P1 Word Types"
+    ) +
+    theme_minimal(base_size = 12) +
+    theme(
+        plot.title = element_text(hjust = 0.5, size = 14),
+        legend.title = element_text(size = 8),
+        legend.text = element_text(size = 10)
+    )
+ggsave(filename = file.path(plot_path, "P1", "outlier_p1_so2_base_p1_inhib_plot.png"), outlier_p1_so2_base_p1_inhib_plot, width = 6, height = 6, dpi = 300)
+```
+ 
+```{r}
+# P1 SO2 Exp Model
+simulationOutput_p1_so2_exp_model <- simulateResiduals(p1_so2_exp_model)
+
+threshold_lower <- 1 / (1000 + 1)
+threshold_upper <- 1 - threshold_lower
+
+outlier_indices <- which(
+    simulationOutput_p1_so2_exp_model$scaledResiduals < threshold_lower |
+        simulationOutput_p1_so2_exp_model$scaledResiduals > threshold_upper
+)
+
+data_model <- model.frame(p1_so2_exp_model)
+data_clean_p1_so2_base <- data_model[-outlier_indices, ]
+
+model_clean_p1_so2_exp <- update(p1_so2_exp_model, data = data_clean_p1_so2_base)
+summary(model_clean_p1_so2_exp)
+
+model_clean_p1_so2_exp_pred <- as.data.frame(ggpredict(model_clean_p1_so2_exp, terms = c("WordTypeP1", "inhibition_control_score [all]"), type = "fixed", bias_correction = TRUE))
+model_clean_p1_so2_exp_pred$group <- as.numeric(as.character(model_clean_p1_so2_exp_pred$group))
+
+outlier_p1_so2_exp_p1_inhib_plot <- ggplot(model_clean_p1_so2_exp_pred, aes(x = group, y = predicted, color = x)) +
+    geom_line(size = 1) +
+    geom_ribbon(aes(ymin = conf.low, ymax = conf.high, fill = x), alpha = 0.2, color = NA) +
+    labs(
+        x = "Inhibition Control Score (Scaled)",
+        y = "Predicted Log Reading Time",
+        title = str_wrap("Predicted log reading times of P1 Word Types at P1 Spillover 2 based on Inhibition Control Score (Exploratory Model)", width = 60),
+        color = "P1 Word Types",
+        fill = "P1 Word Types"
+    ) +
+    theme_minimal(base_size = 12) +
+    theme(
+        plot.title = element_text(hjust = 0.5, size = 14),
+        legend.title = element_text(size = 8),
+        legend.text = element_text(size = 10)
+    )
+ggsave(filename = file.path(plot_path, "P1", "outlier_p1_so2_exp_p1_inhib_plot.png"), outlier_p1_so2_exp_p1_inhib_plot, width = 6, height = 6, dpi = 300)
+```
+```{r}
+# ============================================================
+# 1. Position P2 Models
+# ============================================================
+```
+```{r}
+# P2 ROI Model
+simulationOutput_p2_roi_base_model <- simulateResiduals(p2_roi_base_model)
+
+threshold_lower <- 1 / (1000 + 1)
+threshold_upper <- 1 - threshold_lower
+
+outlier_indices <- which(
+    simulationOutput_p2_roi_base_model$scaledResiduals < threshold_lower |
+        simulationOutput_p2_roi_base_model$scaledResiduals > threshold_upper
+)
+
+data_model <- model.frame(p2_roi_base_model)
+data_clean_p2_roi_base <- data_model[-outlier_indices, ]
+
+model_clean_p2_roi_base <- update(p2_roi_base_model, data = data_clean_p2_roi_base)
+summary(model_clean_p2_roi_base) # Singularity issues due to removed variables
+```
+```{r}
+# P2 ROI Model - Exp
+simulationOutput_p2_roi_exp_model <- simulateResiduals(p2_roi_exp_model)
+
+threshold_lower <- 1 / (1000 + 1)
+threshold_upper <- 1 - threshold_lower
+
+#
+outlier_indices <- which(
+    simulationOutput_p2_roi_exp_model$scaledResiduals < threshold_lower |
+        simulationOutput_p2_roi_exp_model$scaledResiduals > threshold_upper
+)
+
+data_model <- model.frame(p2_roi_exp_model)
+data_clean_p2_roi_base <- data_model[-outlier_indices, ]
+
+model_clean_p2_roi_exp <- update(p2_roi_exp_model, data = data_clean_p2_roi_base)
+summary(model_clean_p2_roi_exp)
+```
+```{r}
+# P2 SO1 Model - Base
+simulationOutput_p2_so1_base_model <- simulateResiduals(p2_so1_base_model)
+
+threshold_lower <- 1 / (1000 + 1)
+threshold_upper <- 1 - threshold_lower
+
+outlier_indices <- which(
+    simulationOutput_p2_so1_base_model$scaledResiduals < threshold_lower |
+        simulationOutput_p2_so1_base_model$scaledResiduals > threshold_upper
+)
+
+data_model <- model.frame(p2_so1_base_model)
+data_clean_p2_so1_base <- data_model[-outlier_indices, ]
+
+model_clean_p2_so1_base <- update(p2_so1_base_model, data = data_clean_p2_so1_base)
+summary(model_clean_p2_so1_base)
+```
+```{r}
+# P2 SO1 Model - Exp
+simulationOutput_p2_so1_exp_model <- simulateResiduals(p2_so1_exp_model)
+
+threshold_lower <- 1 / (1000 + 1)
+threshold_upper <- 1 - threshold_lower
+
+outlier_indices <- which(
+    simulationOutput_p2_so1_exp_model$scaledResiduals < threshold_lower |
+        simulationOutput_p2_so1_exp_model$scaledResiduals > threshold_upper
+)
+
+data_model <- model.frame(p2_so1_exp_model)
+data_clean_p2_so1_base <- data_model[-outlier_indices, ]
+
+model_clean_p2_so1_exp <- update(p2_so1_exp_model, data = data_clean_p2_so1_base)
+summary(model_clean_p2_so1_exp)
+```
+```{r}
+# P2 SO2 Model
+simulationOutput_p2_so2_base_model <- simulateResiduals(p2_so2_base_model)
+
+threshold_lower <- 1 / (1000 + 1)
+threshold_upper <- 1 - threshold_lower
+
+outlier_indices <- which(
+    simulationOutput_p2_so2_base_model$scaledResiduals < threshold_lower |
+        simulationOutput_p2_so2_base_model$scaledResiduals > threshold_upper
+)
+
+data_model <- model.frame(p2_so2_base_model)
+data_clean_p2_so2_base <- data_model[-outlier_indices, ]
+
+model_clean_p2_so2_base <- update(p2_so2_base_model, data = data_clean_p2_so2_base)
+summary(model_clean_p2_so2_base)
+```
+```{r}
+# P2 SO2 Model - Exp
+simulationOutput_p2_so2_exp_model <- simulateResiduals(p2_so2_exp_model)
+
+threshold_lower <- 1 / (1000 + 1)
+threshold_upper <- 1 - threshold_lower
+
+outlier_indices <- which(
+    simulationOutput_p2_so2_exp_model$scaledResiduals < threshold_lower |
+        simulationOutput_p2_so2_exp_model$scaledResiduals > threshold_upper
+)
+
+data_model <- model.frame(p2_so2_exp_model)
+data_clean_p2_so2_base <- data_model[-outlier_indices, ]
+
+model_clean_p2_so2_exp <- update(p2_so2_exp_model, data = data_clean_p2_so2_base)
+summary(model_clean_p2_so2_exp)
+```

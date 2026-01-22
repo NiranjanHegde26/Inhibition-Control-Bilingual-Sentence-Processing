@@ -1,0 +1,88 @@
+```{r}
+# ============================================================
+# Title:    SPR Comprehension Analysis Script
+# Project:  Individual Differences of Inhibition Control in Bilingual Sentence Processing: A Self Paced Reading Approach
+# OSF:      https://osf.io/uyvxw
+# Author:   Niranjana Hegde Bhimanakone Satyanarayana
+# Created:  24/12/2025
+# R version: 4.3.2
+#
+# Description:
+# This script analyses the accuracy of comprehension questions
+# provided by the participants across 4 lists,
+# and writes the results back
+#
+# Dependency:
+# - People should be already filtered based on English Proficiency by running the script Inhibition-Control-Bilingual-Sentence-Processing\scripts\proficiency\proficiency _analysis.r
+# ============================================================
+```
+```{r}
+# Load libraries
+library(tidyr)
+library(dplyr)
+```
+```{r}
+spr_file_list1 <- "D:/Studies/Thesis/Analysis/Inhibition-Control-Bilingual-Sentence-Processing/data/spr/29107b08-8dc4-4987-b1a3-1f0596ac3c7e_results.csv"
+spr_file_list2 <- "D:/Studies/Thesis/Analysis/Inhibition-Control-Bilingual-Sentence-Processing/data/spr/06a109e9-1300-45b0-8445-c45643f19279_results.csv"
+spr_file_list3 <- "D:/Studies/Thesis/Analysis/Inhibition-Control-Bilingual-Sentence-Processing/data/spr/25e35492-fc79-4a22-bcc5-7f7d89a9aee8_results.csv"
+spr_file_list4 <- "D:/Studies/Thesis/Analysis/Inhibition-Control-Bilingual-Sentence-Processing/data/spr/eed95789-5869-4db7-8a1c-210b900bcd14_results.csv"
+participants_file <- "D:/Studies/Thesis/Analysis/Inhibition-Control-Bilingual-Sentence-Processing/data/final analysis/participants_based_on_proficiency_full.csv"
+# Just 1 list is enough to extract the filler questions and answers.
+list1 <- "D:/Studies/Thesis/Analysis/Inhibition-Control-Bilingual-Sentence-Processing/materials/List1.csv"
+```
+```{r}
+## Read all Materials
+spr_df_l1 <- read.csv(spr_file_list1)
+spr_df_l2 <- read.csv(spr_file_list2)
+spr_df_l3 <- read.csv(spr_file_list3)
+spr_df_l3$Newline. <- as.character(spr_df_l3$Newline.)
+spr_df_l4 <- read.csv(spr_file_list4)
+participants <- read.csv(participants_file)
+materials <- read.csv(list1)
+```
+```{r}
+# Bind the response files together
+spr_df <- bind_rows(spr_df_l1, spr_df_l2, spr_df_l3, spr_df_l4)
+# Combine all materials, rename the column, and retain answers to fillers
+spr_df <- spr_df %>%
+    filter(PennElementType == "Scale") %>%
+    filter(user_id %in% participants$workerid) %>%
+    select(user_id, ItemID, Value)
+```
+```{r}
+# Extract fillers from List 1 with its answers
+fillers <- materials %>%
+    filter(Type == "Filler") %>%
+    select(ItemID, Question, Answer)
+```
+```{r}
+# Merge the correct answer with SPR
+spr_df <- spr_df %>%
+    left_join(fillers, by = "ItemID") %>%
+    rename(workerid = user_id)
+
+# Compoute if the answer is correct
+spr_df <- spr_df %>%
+    mutate(
+        isCorrect = toupper(Value) == toupper(Answer)
+    )
+```
+```{r}
+# Summarize
+comprehension_question_summary <- spr_df %>%
+    group_by(workerid) %>%
+    summarize(
+        comprehensionAccuracy = mean(isCorrect, na.rm = TRUE)
+    )
+is.na(comprehension_question_summary)
+```
+```{r}
+# Write the results to proficiency file for later usage
+participants_with_scores_file <- "D:/Studies/Thesis/Analysis/Inhibition-Control-Bilingual-Sentence-Processing/data/final analysis/participants_based_on_proficiency.csv"
+participants_with_scores <- read.csv(participants_with_scores_file)
+
+# Write results only for those who are included from English proficiency score
+participants_with_scores <- participants_with_scores %>%
+    left_join(comprehension_question_summary, by = "workerid")
+write.csv(participants_with_scores, file = participants_with_scores_file, row.names = FALSE)
+```

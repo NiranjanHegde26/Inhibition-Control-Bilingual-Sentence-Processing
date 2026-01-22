@@ -1,0 +1,313 @@
+```{r}
+# ============================================================
+# Title:    Statistical Model Diagnostics and Post-hoc Analysis Script
+# Project:  Individual Differences of Inhibition Control in Bilingual Sentence Processing: A Self Paced Reading Approach
+# OSF:      https://osf.io/uyvxw
+# Author:   Niranjana Hegde Bhimanakone Satyanarayana
+# Created:  25/12/2025
+# R version: 4.3.2
+#
+# Description:
+# This script uses model diagnostic libraries to check the model fit,
+# post-hoc analysis for Position P1 an P2.
+#
+# Note:
+# In this file, following shorthand notations are used:
+#       - Base: Confirmatory Model
+#       - Exp: Exploratory Model
+#       - SO1 - Spillover 1
+#       - SO2 - Spillover 2
+# ============================================================
+```
+```{r}
+# Importing the libraries
+library(tidyr)
+library(stringr)
+library(ggplot2)
+library(dplyr)
+library(ggeffects)
+library(emmeans)
+library(lme4)
+library(DHARMa)
+```
+```{r}
+# Load the models and dataframes
+p1_roi_base_model <- readRDS("D:/Studies/Thesis/Analysis/P1_ROI_Base_lmer_no_slopes.rds")
+p1_roi_exp_model <- readRDS("D:/Studies/Thesis/Analysis/P1_ROI_Exp_lmer_no_slopes.rds")
+p1_so1_base_model <- readRDS("D:/Studies/Thesis/Analysis/P1_SO1_Base_lmer_no_slopes.rds")
+p1_so1_exp_model <- readRDS("D:/Studies/Thesis/Analysis/P1_SO1_Exp_lmer_no_slopes.rds")
+p1_so2_base_model <- readRDS("D:/Studies/Thesis/Analysis/P1_SO2_Base_lmer_no_slopes.rds")
+p1_so2_exp_model <- readRDS("D:/Studies/Thesis/Analysis/P1_SO2_Exp_lmer_no_slopes.rds")
+p2_roi_base_model <- readRDS("D:/Studies/Thesis/Analysis/P2_ROI_Base_lmer_no_slopes.rds")
+p2_roi_exp_model <- readRDS("D:/Studies/Thesis/Analysis/P2_ROI_Exp_lmer_no_slopes.rds")
+p2_so1_base_model <- readRDS("D:/Studies/Thesis/Analysis/P2_SO1_Base_lmer_no_slopes.rds")
+p2_so1_exp_model <- readRDS("D:/Studies/Thesis/Analysis/P2_SO1_Exp_lmer_no_slopes.rds")
+p2_so2_base_model <- readRDS("D:/Studies/Thesis/Analysis/P2_SO2_Base_lmer_no_slopes.rds")
+p2_so2_exp_model <- readRDS("D:/Studies/Thesis/Analysis/P2_SO2_Exp_lmer_no_slopes.rds")
+p1_roi_df <- read.csv("D:/Studies/Thesis/Analysis/Inhibition-Control-Bilingual-Sentence-Processing/data/final analysis/P1_ROI.csv")
+p1_so1_df <- read.csv("D:/Studies/Thesis/Analysis/Inhibition-Control-Bilingual-Sentence-Processing/data/final analysis/P1_SO1.csv")
+p2_roi_df <- read.csv("D:/Studies/Thesis/Analysis/Inhibition-Control-Bilingual-Sentence-Processing/data/final analysis/P2_ROI.csv")
+p2_so1_df <- read.csv("D:/Studies/Thesis/Analysis/Inhibition-Control-Bilingual-Sentence-Processing/data/final analysis/P2_SO1.csv")
+plot_path <- "D:/Studies/Thesis/Analysis/Inhibition-Control-Bilingual-Sentence-Processing/Plots/lmer/residuals/no/"
+```
+```{r}
+############################################
+########## Diagnostics Roadmap #############
+############################################
+# 1. Model fit and residual analysis
+# 2. Checking the fixed effects and CI for Position P1
+# 3. Checking the Participant and User random effects for Position P1
+```
+```{r}
+# ============================================================
+# 1. Model fit and residual analysis
+# ============================================================
+```
+```{r}
+# Residual calculation and plots using: https://www.rdocumentation.org/packages/DHARMa/versions/0.4.7/topics/simulateResiduals
+run_residual_diagnostics <- function(model, model_name) {
+    # Simulate
+    model_sim <- simulateResiduals(fittedModel = model, n = 1000)
+    # Plot
+    png(file.path(plot_path, paste0(model_name, "_res.png")), width = 800, height = 600) # Save as PNG
+    plot(model_sim)
+    dev.off()
+
+    # Extract the test results
+    uniform_test <- testUniformity(model_sim)
+    dispersion_test <- testDispersion(model_sim)
+    inflation_test <- tryCatch(
+        {
+            testZeroInflation(model_sim)
+        },
+        error = function(e) {
+            print("Zero Inflation not applicable for this model")
+            NA
+        }
+    )
+
+    data.frame(
+        model_name = model_name,
+        n_obs = nobs(model),
+        uniformity_p = uniform_test$p.value,
+        dispersion_p = dispersion_test$p.value,
+        zero_inflation_p = if (is.na(inflation_test)[1]) NA else inflation_test$p.value,
+        stringsAsFactors = FALSE
+    )
+}
+```
+```{r}
+# P1 Models
+p1_roi_base_results <- run_residual_diagnostics(p1_roi_base_model, "P1_ROI_Confirmatory")
+p1_roi_exp_results <- run_residual_diagnostics(p1_roi_exp_model, "P1_ROI_Exploratory")
+p1_so1_base_results <- run_residual_diagnostics(p1_so1_base_model, "P1_SO1_Confirmatory")
+p1_so1_exp_results <- run_residual_diagnostics(p1_so1_exp_model, "P1_SO1_Exploratory")
+p1_so2_base_results <- run_residual_diagnostics(p1_so2_base_model, "P1_SO2_Confirmatory")
+p1_so2_exp_results <- run_residual_diagnostics(p1_so2_exp_model, "P1_SO2_Exploratory")
+```
+```{r}
+# P2 Models
+p2_roi_base_results <- run_residual_diagnostics(p2_roi_base_model, "P2_ROI_Confirmatory")
+p2_roi_exp_results <- run_residual_diagnostics(p2_roi_exp_model, "P2_ROI_Exploratory")
+p2_so1_base_results <- run_residual_diagnostics(p2_so1_base_model, "P2_SO1_Confirmatory")
+p2_so1_exp_results <- run_residual_diagnostics(p2_so1_exp_model, "P2_SO1_Exploratory")
+p2_so2_base_results <- run_residual_diagnostics(p2_so2_base_model, "P2_SO2_Confirmatory")
+p2_so2_exp_results <- run_residual_diagnostics(p2_so2_exp_model, "P2_SO2_Exploratory")
+```
+```{r}
+# Combine all model results
+full_diagnostics <- rbind(
+    p1_roi_base_results,
+    p1_roi_exp_results,
+    p1_so1_base_results,
+    p1_so1_exp_results,
+    p1_so2_base_results,
+    p1_so2_exp_results,
+    p2_roi_base_results,
+    p2_roi_exp_results,
+    p2_so1_base_results,
+    p2_so1_exp_results,
+    p2_so2_base_results,
+    p2_so2_exp_results
+)
+
+full_diagnostics <- full_diagnostics %>%
+    mutate(
+        model_name = gsub("SO", "Spillover", model_name)
+    ) %>%
+    mutate(model_name = gsub("_", " ", model_name))
+
+print(full_diagnostics)
+```
+```{r}
+# ============================================================
+# 2. Checking the fixed effects and CI for Position P1
+# ============================================================
+
+# Mean of IH > Mean of C1 but the significance is not reached. So check the effect size
+# First check the effect size, fixed effects estimations and CI checks
+```
+
+```{r}
+# Base Model at P1 ROI
+emm_p1_roi_base <- emmeans(p1_roi_base_model, ~WordTypeP1) # Type is added to obtain the raw RT CI
+p1_roi_base_contrasts <- contrast(emm_p1_roi_base, method = "revpairwise")
+
+
+# Plot this
+emm_p1_roi_base_df <- as.data.frame(emm_p1_roi_base)
+p1_roi_base_eff_ci <- ggplot(emm_p1_roi_base_df, aes(x = WordTypeP1, y = emmean)) +
+    geom_point(size = 3) +
+    geom_errorbar(aes(ymin = lower.CL, ymax = upper.CL), width = 0.2) +
+    ylab("Predicted Log Reading Time") +
+    xlab("P1 Word Types (Confirmatory Model)") +
+    theme_minimal(base_size = 14)
+ggsave(filename = file.path(plot_path, "p1_roi_base_eff_ci.png"), plot = p1_roi_base_eff_ci, width = 6, height = 6, dpi = 300)
+```
+```{r}
+# Exp Model at P1 ROI
+emm_p1_roi_exp <- emmeans(p1_roi_exp_model, ~WordTypeP1) # Type is added to obtain the raw RT CI
+p1_roi_exp_contrasts <- contrast(emm_p1_roi_exp, method = "revpairwise")
+
+# Plot this
+emm_p1_roi_exp_df <- as.data.frame(emm_p1_roi_exp)
+p1_roi_exp_eff_ci <- ggplot(emm_p1_roi_exp_df, aes(x = WordTypeP1, y = emmean)) +
+    geom_point(size = 3) +
+    geom_errorbar(aes(ymin = lower.CL, ymax = upper.CL), width = 0.2) +
+    ylab("Predicted Log Reading Time") +
+    xlab("P1 Word Types") +
+    theme_minimal(base_size = 14)
+ggsave(filename = file.path(plot_path, "p1_roi_exp_eff_ci .png"), plot = p1_roi_exp_eff_ci, width = 6, height = 6, dpi = 300)
+```
+```{r}
+# Base Model at P1 SO1
+emm_p1_so1_base <- emmeans(p1_so1_base_model, ~WordTypeP1) # Type is added to obtain the raw RT CI
+p1_so1_base_contrasts <- contrast(emm_p1_so1_base, method = "revpairwise", )
+
+# Plot this
+emm_p1_so1_base_df <- as.data.frame(emm_p1_so1_base)
+p1_so1_base_eff_ci <- ggplot(emm_p1_so1_base_df, aes(x = WordTypeP1, y = emmean)) +
+    geom_point(size = 3) +
+    geom_errorbar(aes(ymin = lower.CL, ymax = upper.CL), width = 0.2) +
+    ylab("Predicted Log Reading Time") +
+    xlab("P1 Word Types (Spillover 1)") +
+    theme_minimal(base_size = 14)
+ggsave(filename = file.path(plot_path, "p1_so1_base_eff_ci.png"), plot = p1_so1_base_eff_ci, width = 6, height = 6, dpi = 300)
+```
+```{r}
+# Exp Model at P1 SO1
+emm_p1_so1_exp <- emmeans(p1_so1_exp_model, ~WordTypeP1) # Type is added to obtain the raw RT CI
+p1_so1_exp_contrasts <- contrast(emm_p1_so1_exp, method = "revpairwise", )
+
+# Plot this
+emm_p1_so1_exp_df <- as.data.frame(emm_p1_so1_exp)
+p1_so1_exp_eff_ci <- ggplot(emm_p1_so1_exp_df, aes(x = WordTypeP1, y = emmean)) +
+    geom_point(size = 3) +
+    geom_errorbar(aes(ymin = lower.CL, ymax = upper.CL), width = 0.2) +
+    ylab("Predicted Log Reading Time") +
+    xlab("P1 Word Types (Spillover 1)") +
+    theme_minimal(base_size = 14)
+ggsave(filename = file.path(plot_path, "p1_so1_exp_eff_ci.png"), plot = p1_so1_exp_eff_ci, width = 6, height = 6, dpi = 300)
+```
+```{r}
+# ============================================================
+# 3. Checking the Participant and User random effects for Position P1
+# ============================================================
+```
+```{r}
+# Let us additionally plot the random effects for P1
+p1_roi_base_ranef_df <- as.data.frame(ranef(p1_roi_base_model))
+p1_roi_exp_ranef_df <- as.data.frame(ranef(p1_roi_exp_model))
+p1_so1_base_ranef_df <- as.data.frame(ranef(p1_so1_base_model))
+p1_so1_exp_ranef_df <- as.data.frame(ranef(p1_so1_exp_model))
+```
+```{r}
+# ============================================================
+# 3a. Checking the Participant random effects
+# ============================================================
+```
+```{r}
+# Random effects for participants at ROI base model
+p1_roi_base_ranef_users_df <- subset(p1_roi_base_ranef_df, grpvar == "user_id" & term == "WordTypeP11")
+ggplot(p1_roi_base_ranef_users_df, aes(x = condval)) +
+    geom_histogram(binwidth = 0.01, fill = "#FEDA8B", color = "black") +
+    xlab("Participant deviation from mean IH effect (P1 ROI)") +
+    ylab("Number of participants") +
+    theme_minimal(base_size = 14) +
+    ggtitle("Distribution of IH effect across participants at ROI (Confirmatory Model)")
+```
+```{r}
+# ROI Exp Model
+p1_roi_exp_ranef_users_df <- subset(p1_roi_exp_ranef_df, grpvar == "user_id" & term == "WordTypeP11")
+ggplot(p1_roi_exp_ranef_users_df, aes(x = condval)) +
+    geom_histogram(binwidth = 0.01, fill = "#FEDA8B", color = "black") +
+    xlab("Participant deviation from mean IH effect (P1 ROI)") +
+    ylab("Number of participants") +
+    theme_minimal(base_size = 14) +
+    ggtitle("Distribution of IH effect across participants at ROI (Exploratory Model)")
+```
+```{r}
+# SO1 Base model
+p1_so1_base_ranef_users_df <- subset(p1_so1_base_ranef_df, grpvar == "user_id" & term == "WordTypeP11")
+ggplot(p1_so1_base_ranef_users_df, aes(x = condval)) +
+    geom_histogram(binwidth = 0.01, fill = "#FEDA8B", color = "black") +
+    xlab("Participant deviation from mean IH effect (P1 Spillover 1)") +
+    ylab("Number of participants") +
+    theme_minimal(base_size = 14) +
+    ggtitle("Distribution of IH effect across participants at Spillover 1 (Confirmatory Model)")
+```
+```{r}
+# SO1 Exp model
+p1_so1_exp_ranef_users_df <- subset(p1_so1_exp_ranef_df, grpvar == "user_id" & term == "WordTypeP11")
+ggplot(p1_so1_exp_ranef_users_df, aes(x = condval)) +
+    geom_histogram(binwidth = 0.01, fill = "#FEDA8B", color = "black") +
+    xlab("Participant deviation from mean IH effect (P1 Spillover 1)") +
+    ylab("Number of participants") +
+    theme_minimal(base_size = 14) +
+    ggtitle("Distribution of IH effect across participants at Spillover 1 (Exploratory Model)")
+```
+```{r}
+# ============================================================
+# 3a. Checking the Item random effects
+# ============================================================
+```
+```{r}
+# Random effects for items at ROI base model
+p1_roi_base_ranef_items_df <- subset(p1_roi_base_ranef_df, grpvar == "ItemID" & term == "WordTypeP11")
+ggplot(p1_roi_base_ranef_items_df, aes(x = condval)) +
+    geom_histogram(binwidth = 0.01, fill = "#FEDA8B", color = "black") +
+    xlab("Participant deviation from mean IH effect (P1 ROI)") +
+    ylab("Number of items") +
+    theme_minimal(base_size = 14) +
+    ggtitle("Distribution of IH effect across items at ROI (Confirmatory Model)")
+```
+```{r}
+# ROI Exp Model
+p1_roi_exp_ranef_items_df <- subset(p1_roi_exp_ranef_df, grpvar == "ItemID" & term == "WordTypeP11")
+ggplot(p1_roi_exp_ranef_items_df, aes(x = condval)) +
+    geom_histogram(binwidth = 0.01, fill = "#FEDA8B", color = "black") +
+    xlab("Participant deviation from mean IH effect (P1 ROI)") +
+    ylab("Number of items") +
+    theme_minimal(base_size = 14) +
+    ggtitle("Distribution of IH effect across items at ROI (Exploratory Model)")
+```
+```{r}
+# SO1 Base model
+p1_so1_base_ranef_items_df <- subset(p1_so1_base_ranef_df, grpvar == "ItemID" & term == "WordTypeP11")
+ggplot(p1_so1_base_ranef_items_df, aes(x = condval)) +
+    geom_histogram(binwidth = 0.01, fill = "#FEDA8B", color = "black") +
+    xlab("Participant deviation from mean IH effect (P1 Spillover 1)") +
+    ylab("Number of items") +
+    theme_minimal(base_size = 14) +
+    ggtitle("Distribution of IH effect across items at Spillover 1 (Confirmatory Model)")
+```
+```{r}
+# SO1 Exp model
+p1_so1_exp_ranef_items_df <- subset(p1_so1_exp_ranef_df, grpvar == "ItemID" & term == "WordTypeP11")
+ggplot(p1_so1_exp_ranef_items_df, aes(x = condval)) +
+    geom_histogram(binwidth = 0.01, fill = "#FEDA8B", color = "black") +
+    xlab("Participant deviation from mean IH effect (P1 Spillover 1)") +
+    ylab("Number of items") +
+    theme_minimal(base_size = 14) +
+    ggtitle("Distribution of IH effect across items at Spillover 1 (Exploratory Model)")
+```
