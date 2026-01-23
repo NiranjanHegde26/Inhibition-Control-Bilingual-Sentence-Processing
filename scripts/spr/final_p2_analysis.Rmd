@@ -1,0 +1,763 @@
+```{r}
+# ============================================================
+# Title:    Position P2 Statistical Analysis Script
+# Project:  Individual Differences of Inhibition Control in Bilingual Sentence Processing: A Self Paced Reading Approach
+# OSF:      https://osf.io/uyvxw
+# Author:   Niranjana Hegde Bhimanakone Satyanarayana
+# Created:  28/10/2025
+# R version: 4.3.2
+#
+# Description:
+# This script uses linear-mixed effects models to analyse the self-paced reading times
+# at position P2. The statistical models at this position investigates our RQ1b i.e.,
+# "Whether inhibition control has residual consequences for subsequent processing?"
+# The predictor variable 'inhibition_control_score' tests the RQ2,
+# "Do the individual differences of interference and inhibition control modulate
+# the reading times of interlingual homographs and their translation equivalent words within a sentence?"
+# Although the research questions addressed by P1 and P2 are the same, P2 looks at the residual inhibitory
+# aftereffects caused by the
+#
+# Note:
+# In this file, following shorthand notations are used:
+#       - Base - Confirmatory Model
+#       - Exp  - Exploratory Model
+#       - ROI  - Region of interest where the target words are placed
+#       - SO1  - Spillover 1
+#       - SO2  - Spillover 2
+# ============================================================
+```
+```{r}
+# ============================================================
+# Roadmap:
+#   - The confirmatory model analyses test only the effects that are
+#     specified a priori and preregistered on OSF, namely the effects
+#     of the P1 and P2 word types and inhibition control, while also including standard
+#     control covariates such as word length and log-transformed word frequency.
+#   - The exploratory model analyses extend the confirmatory models by adding further covariates such as
+#     orthographic distance, phonetic distance, and LexTALE scores to examine whether they
+#     had effects of their own and whether they explained variance previously captured by the
+#     preregistered predictors
+#   - At each step, predictors are removed individually,
+#     and the resulting reduced models were compared to the full model using
+#     ANOVA. Additionally, in the case of singularity, the random effects are simplified
+#   - Above steps are applicable to all regions and to both confirmatory and exploratory models
+# ============================================================
+```
+```{r}
+# Importing the libraries
+library(tidyr)
+library(lmerTest)
+library(ggplot2)
+library(dplyr)
+library(emmeans)
+conflicted::conflicts_prefer(dplyr::select)
+conflicted::conflicts_prefer(dplyr::rename)
+conflicted::conflicts_prefer(dplyr::mutate)
+conflicted::conflicts_prefer(dplyr::filter)
+```
+```{r}
+# Files related to the statistical analyses
+spr_file_list1 <- "D:/Studies/Thesis/Analysis/Inhibition-Control-Bilingual-Sentence-Processing/data/spr/29107b08-8dc4-4987-b1a3-1f0596ac3c7e_results.csv"
+spr_file_list2 <- "D:/Studies/Thesis/Analysis/Inhibition-Control-Bilingual-Sentence-Processing/data/spr/06a109e9-1300-45b0-8445-c45643f19279_results.csv"
+spr_file_list3 <- "D:/Studies/Thesis/Analysis/Inhibition-Control-Bilingual-Sentence-Processing/data/spr/25e35492-fc79-4a22-bcc5-7f7d89a9aee8_results.csv"
+spr_file_list4 <- "D:/Studies/Thesis/Analysis/Inhibition-Control-Bilingual-Sentence-Processing/data/spr/eed95789-5869-4db7-8a1c-210b900bcd14_results.csv"
+final_participants_file <- "D:/Studies/Thesis/Analysis/Inhibition-Control-Bilingual-Sentence-Processing/data/final analysis/inhibition_control_composite_scores.csv"
+list1 <- "D:/Studies/Thesis/Analysis/Inhibition-Control-Bilingual-Sentence-Processing/materials/List1.csv"
+list2 <- "D:/Studies/Thesis/Analysis/Inhibition-Control-Bilingual-Sentence-Processing/materials/List2.csv"
+list3 <- "D:/Studies/Thesis/Analysis/Inhibition-Control-Bilingual-Sentence-Processing/materials/List3.csv"
+list4 <- "D:/Studies/Thesis/Analysis/Inhibition-Control-Bilingual-Sentence-Processing/materials/List4.csv"
+materials_file <- "D:/Studies/Thesis/Analysis/Inhibition-Control-Bilingual-Sentence-Processing/materials/FinalMaterials.csv"
+inhibition_composite_score_file <- "D:/Studies/Thesis/Analysis/Inhibition-Control-Bilingual-Sentence-Processing/data/final analysis/inhibition_control_composite_scores.csv"
+item_properties_file <- "D:/Studies/Thesis/Analysis/Inhibition-Control-Bilingual-Sentence-Processing/materials/itemsWithDistances.csv"
+lexTALE_file <- "D:/Studies/Thesis/Analysis/Inhibition-Control-Bilingual-Sentence-Processing/data/final analysis/participants_based_on_proficiency.csv"
+subtlex_us_file <- "D:\\Studies\\Thesis\\Analysis\\Inhibition-Control-Bilingual-Sentence-Processing\\materials\\SUBTLEXus.Rdata"
+load(subtlex_us_file)
+```
+```{r}
+## Read all Materials
+spr_df_l1 <- read.csv(spr_file_list1)
+spr_df_l2 <- read.csv(spr_file_list2)
+spr_df_l3 <- read.csv(spr_file_list3)
+spr_df_l4 <- read.csv(spr_file_list4)
+final_participants_df <- read.csv(final_participants_file)
+l1_materials <- read.csv(list1)
+l2_materials <- read.csv(list2)
+l3_materials <- read.csv(list3)
+l4_materials <- read.csv(list4)
+materials_df <- read.csv(materials_file)
+item_properties_df <- read.csv(item_properties_file)
+lexTale_df <- read.csv(lexTALE_file)
+inhibition_composite_score_df <- read.csv(inhibition_composite_score_file)
+```
+```{r}
+# Bind the response files together
+spr_df_l3$Newline. <- as.character(spr_df_l3$Newline.) # This line is added because I mistakenly changed the column datatype of this column when I opened it in Excel.
+spr_df <- bind_rows(spr_df_l1, spr_df_l2, spr_df_l3, spr_df_l4)
+
+# Combine all materials, rename the column, and remove out fillers
+materials_df <- bind_rows(l1_materials, l2_materials, l3_materials, l4_materials)
+materials_df <- materials_df %>%
+    filter(Type != "Filler") %>%
+    rename(
+        WordatP2 = P2
+    )
+```
+```{r}
+# Filter only those who are eligible from proficiency measures
+spr_df <- spr_df %>%
+    filter(user_id %in% inhibition_composite_score_df$workerid) %>%
+    filter(user_id %in% lexTale_df$workerid[lexTale_df$comprehensionAccuracy > 0.50])
+```
+```{r}
+# Filter only DashedSentences
+spr_df_filtered <- spr_df %>%
+    filter(PennElementName == "DashedSentence") %>%
+    filter(Condition != "Filler" & Condition != "") # Remove fillers
+
+spr_df_filtered <- spr_df_filtered %>%
+    mutate(
+        WordTypeP1 = as.factor(ifelse(grepl("IH", Condition), "IH", "C1")),
+        WordTypeP2 = as.factor(ifelse(grepl("TE", Condition), "TE", "C2")),
+    )
+spr_df_filtered$ItemID <- as.factor(as.integer(spr_df_filtered$ItemID))
+```
+```{r}
+# Include individual inhibition control composite scores
+inhibition_composite_score_df <- inhibition_composite_score_df %>% rename(user_id = workerid)
+spr_df_filtered <- spr_df_filtered %>%
+    left_join(
+        inhibition_composite_score_df %>%
+            select(user_id, composite_score),
+        by = "user_id"
+    ) %>%
+    rename(inhibition_control_score = composite_score)
+```
+```{r}
+# Include LexTALE score into the dataframe
+lexTale_df <- lexTale_df %>% rename(user_id = workerid)
+spr_df_filtered <- spr_df_filtered %>%
+    left_join(lexTale_df %>% select(user_id, score), by = "user_id") %>%
+    rename(LexTALE = score)
+```
+``````{r}
+# Remove Item 18
+spr_df_filtered <- spr_df_filtered[spr_df_filtered$ItemID != 18, ]
+# Remove Item 16 due to typo error
+spr_df_filtered <- spr_df_filtered[spr_df_filtered$ItemID != 16, ]
+```
+```{r}
+# ============================================================
+# 1. ROI Analysis
+# ============================================================
+```
+```{r}
+spr_df_filtered_for_P2 <- spr_df_filtered %>%
+    left_join(materials_df %>% select(SentenceID, Post.Critical.Position.Index, WordatP2),
+        by = "SentenceID"
+    ) %>%
+    filter(Parameter == Post.Critical.Position.Index)
+
+spr_df_filtered_for_P2$WordTypeP1 <- as.factor(spr_df_filtered_for_P2$WordTypeP1)
+spr_df_filtered_for_P2$WordTypeP2 <- as.factor(spr_df_filtered_for_P2$WordTypeP2)
+contrasts(spr_df_filtered_for_P2$WordTypeP1) <- contr.sum(2)
+contrasts(spr_df_filtered_for_P2$WordTypeP2) <- contr.sum(2)
+```
+```{r}
+# Remove responses lesser than 100ms
+original <- nrow(spr_df_filtered_for_P2)
+paste0("Total entries: ", original)
+spr_df_filtered_for_P2 <- spr_df_filtered_for_P2 %>%
+    filter(Reading.time > 100)
+
+afterFilter <- nrow(spr_df_filtered_for_P2)
+paste0("Total entries with less than 100 ms response time for ROI: ", original - afterFilter)
+```
+```{r}
+# Remove responses greater than 5000ms
+original <- nrow(spr_df_filtered_for_P2)
+spr_df_filtered_for_P2 <- spr_df_filtered_for_P2 %>%
+    filter(Reading.time < 5000)
+afterFilter <- nrow(spr_df_filtered_for_P2)
+paste0("Total entries with greater than 5000 ms response time for ROI: ", original - afterFilter)
+```
+```{r}
+# Participant level exclusion: Any participant whose mean RT for ROI is greater than 2.5SD of the sample pool will be discarded
+# It is better to use the log RT instead of RT. Anyway, it is necessary for our modelling too!
+spr_df_filtered_for_P2$p2LogRT <- log(spr_df_filtered_for_P2$Reading.time)
+
+participant_means <- spr_df_filtered_for_P2 %>%
+    group_by(user_id) %>%
+    summarize(mean_RT = mean(p2LogRT, na.rm = TRUE))
+
+meanRT <- mean(participant_means$mean_RT)
+sdRT <- sd(participant_means$mean_RT)
+threshold <- meanRT + 2.5 * sdRT
+participants_to_remove <- participant_means %>%
+    filter(mean_RT > threshold) %>%
+    select(user_id)
+
+spr_df_filtered_for_P2 <- spr_df_filtered_for_P2 %>%
+    filter(!user_id %in% participants_to_remove$user_id)
+
+paste0("Total participants discarded after exclusion criteria: ", unique(nrow(participants_to_remove)))
+```
+```{r}
+# Next criterion: Any responses to an item which is greater than 2.5SD from the mean will be discarded.
+# This is to remove the outlier items that are extremely hard for everyone
+item_means <- spr_df_filtered_for_P2 %>%
+    group_by(ItemID) %>%
+    summarize(mean_Item_RT = mean(p2LogRT, na.rm = TRUE))
+
+meanItemRT <- mean(item_means$mean_Item_RT)
+sdItemRT <- sd(item_means$mean_Item_RT)
+threshold <- meanItemRT + 2.5 * sdItemRT
+items_to_remove <- item_means %>%
+    filter(mean_Item_RT > threshold) %>%
+    select(ItemID)
+
+spr_df_filtered_for_P2 <- spr_df_filtered_for_P2 %>%
+    filter(!ItemID %in% items_to_remove$ItemID)
+
+paste0("Total items discarded after exclusion criteria: ", unique(nrow(items_to_remove)))
+```
+```{r}
+spr_df_filtered_for_P2$LexTALE_z <- scale(spr_df_filtered_for_P2$LexTALE, scale = TRUE, center = TRUE)
+spr_df_filtered_for_P2$wordLengthP2 <- nchar(spr_df_filtered_for_P2$Value)
+spr_df_filtered_for_P2$wordLengthP2_z <- scale(spr_df_filtered_for_P2$wordLengthP2, scale = TRUE, center = TRUE)
+```
+```{r}
+# Add the Spillover word English frequency for addressing variance
+matchesValue <- match(toupper(spr_df_filtered_for_P2$Value), toupper(subtlexus$Word))
+spr_df_filtered_for_P2$FreqP2 <- subtlexus$FREQlow[matchesValue]
+
+# There are some multiword expressions whose control words were derived from the low frequency word.
+# Manulally change it.
+# Fishing Rod has Consent form as control, and Consent was obtained from low frequency word of "Fishing Rod"
+consentFreq <- subtlexus$FREQlow[
+    match("CONSENT", toupper(subtlexus$Word))
+]
+officeFreq <- subtlexus$FREQlow[
+    match("OFFICE", toupper(subtlexus$Word))
+]
+emergencyFreq <- subtlexus$FREQlow[
+    match("EMERGENCY", toupper(subtlexus$Word))
+]
+rodFreq <- 304
+departmentFreq <- 2051
+highFreq <- 8393
+
+spr_df_filtered_for_P2 <- spr_df_filtered_for_P2 %>%
+    mutate(
+        Value_clean = toupper(trimws(Value)),
+        FreqP2 = case_when(
+            Value_clean == "FISHING ROD" ~ rodFreq,
+            Value_clean == "DEPARTMENT STORE" ~ departmentFreq,
+            Value_clean == "HIGH SCHOOL" ~ highFreq,
+            Value_clean == "CONSENT FORM" ~ consentFreq,
+            Value_clean == "FIELD OFFICE" ~ officeFreq,
+            Value_clean == "EMERGENCY ROOM" ~ emergencyFreq,
+            TRUE ~ FreqP2
+        )
+    )
+
+spr_df_filtered_for_P2$LogFreqP2 <- log10(spr_df_filtered_for_P2$FreqP2) + 1
+spr_df_filtered_for_P2$LogFreqP2_z <- scale(spr_df_filtered_for_P2$LogFreqP2, scale = TRUE, center = TRUE)
+```
+```{r}
+# Take a quick summary at this point for frequency and word length
+```
+```{r}
+# Save the dataframe for future references
+write.csv(spr_df_filtered_for_P2, "D:/Studies/Thesis/Analysis/Inhibition-Control-Bilingual-Sentence-Processing/data/final analysis/P2_ROI.csv", row.names = FALSE)
+```
+```{r}
+# ============================================================
+# 1a. ROI Analysis - Confirmatory Model
+# ============================================================
+```
+```{r}
+p2_formula <- as.formula(
+    "p2LogRT ~ WordTypeP1 * WordTypeP2 * inhibition_control_score + wordLengthP2_z + LogFreqP2_z + (1 + WordTypeP1 * WordTypeP2| user_id) + (1 + WordTypeP1 * WordTypeP2| ItemID)"
+)
+base_model <- lmerTest::lmer(formula = p2_formula, data = spr_df_filtered_for_P2, )
+summary(base_model)
+```
+```{r}
+# Remove LogFreqP2_z from the model
+model_without_LogFreqP2_z <- update(base_model, . ~ . - LogFreqP2_z)
+summary(model_without_LogFreqP2_z)
+```
+```{r}
+# Remove WordTypeP1 from items slope
+model_without_Cond1_item <- update(model_without_LogFreqP2_z, . ~ . - (1 + WordTypeP1 * WordTypeP2 | ItemID) + (1 + WordTypeP2 | ItemID))
+anova(model_without_LogFreqP2_z, model_without_Cond1_item)
+```
+```{r}
+# Remove WordTypeP2 from items slope
+model_without_no_item_slp <- update(model_without_Cond1_item, . ~ . - (1 + WordTypeP2 | ItemID) + (1 | ItemID))
+anova(model_without_no_item_slp, model_without_Cond1_item)
+```
+```{r}
+# Remove WordTypeP1 from users slope
+model_without_Cond1_user <- update(model_without_no_item_slp, . ~ . - (1 + WordTypeP1 * WordTypeP2 | user_id) + (1 + WordTypeP2 | user_id))
+anova(model_without_no_item_slp, model_without_Cond1_user)
+```
+```{r}
+# Remove WordTypeP2 from user slope
+model_without_no_user_slp <- update(model_without_Cond1_user, . ~ . - (1 + WordTypeP2 | user_id) + (1 | user_id))
+anova(model_without_no_user_slp, model_without_Cond1_item)
+```
+```{r}
+# model_without_Cond1_item is the best model
+summary(model_without_no_user_slp)
+saveRDS(model_without_no_user_slp, "P2_ROI_Base_lmer_no_slopes.rds")
+```
+```{r}
+# Emmeans to verify how the interaction of WordTypeP2 and WordTypeP1
+P2_P1_roi_Base_emmeans <- emmeans(model_without_no_user_slp, ~ WordTypeP2 | WordTypeP1)
+pairs(P2_P1_roi_Base_emmeans, by = "WordTypeP2")
+print(P2_P1_roi_Base_emmeans)
+```
+```{r}
+# ============================================================
+# 1b. ROI Analysis - Exploratory Model
+# ============================================================
+```
+```{r}
+# Now, exploratory analysis by including the LexTALE score of participants
+# LexTALE_z * LogFreqP2_z and WordTypeP1 * WordTypeP2 * LexTALE_z
+exp_formula_ROI <- as.formula(
+    "p2LogRT ~ WordTypeP1 * WordTypeP2 * inhibition_control_score + WordTypeP1 * WordTypeP2 * LexTALE_z + wordLengthP2_z + LexTALE_z * LogFreqP2_z + (1 + WordTypeP1 * WordTypeP2| user_id) + (1 + WordTypeP1 * WordTypeP2| ItemID)"
+)
+exp_model_ROI <- lmerTest::lmer(formula = exp_formula_ROI, data = spr_df_filtered_for_P2, )
+summary(exp_model_ROI)
+```
+```{r}
+# Remove LogFreqP2_z:LexTALE_z
+model_without_LogFreqP2_z_LexTALE_z <- update(exp_model_ROI, . ~ . - LogFreqP2_z:LexTALE_z)
+summary(model_without_LogFreqP2_z_LexTALE_z)
+anova(exp_model_ROI, model_without_LogFreqP2_z_LexTALE_z)
+```
+```{r}
+# Remove WordTypeP1 from items slope
+model_without_Cond1_item <- update(model_without_LogFreqP2_z_LexTALE_z, . ~ . - (1 + WordTypeP1 * WordTypeP2 | ItemID) + (1 + WordTypeP2 | ItemID))
+anova(model_without_LogFreqP2_z_LexTALE_z, model_without_Cond1_item)
+```
+```{r}
+# Remove WordTypeP2 from items slope
+model_without_no_item_slp <- update(model_without_Cond1_item, . ~ . - (1 + WordTypeP2 | ItemID) + (1 | ItemID))
+anova(model_without_no_item_slp, model_without_Cond1_item)
+```
+```{r}
+# Remove WordTypeP1 from user slope
+model_without_no_cond1_user <- update(model_without_no_item_slp, . ~ . - (1 + WordTypeP1 * WordTypeP2 | user_id) + (1 + WordTypeP2 | user_id))
+anova(model_without_no_item_slp, model_without_no_cond1_user)
+```
+```{r}
+# Remove WordTypeP1 from items
+model_without_no_user_slp <- update(model_without_no_cond1_user, . ~ . - (1 + WordTypeP2 | user_id) + (1 | user_id))
+anova(model_without_no_user_slp, model_without_no_cond1_user)
+summary(model_without_no_user_slp)
+```
+```{r}
+# Exp_model_ROI is the best model
+saveRDS(model_without_no_user_slp, "P2_ROI_Exp_lmer_no_slopes.rds")
+```
+```{r}
+P2_P1_roi_exp_emmeans <- emmeans(model_without_no_user_slp, ~ WordTypeP2 | WordTypeP1)
+P2_P1_roi_exp_emmeans
+pairs(P2_P1_roi_exp_emmeans, by = "WordTypeP2")
+```
+```{r}
+# ============================================================
+# 2. Spillover 1 Analysis
+# ============================================================
+```
+```{r}
+spr_df_for_P2_SO1 <- spr_df_filtered %>%
+    left_join(materials_df %>% select(SentenceID, Post.Critical.Position.Index, WordatP2),
+        by = "SentenceID"
+    ) %>%
+    filter(Parameter == Post.Critical.Position.Index + 1)
+
+spr_df_for_P2_SO1$WordTypeP1 <- as.factor(spr_df_for_P2_SO1$WordTypeP1)
+spr_df_for_P2_SO1$WordTypeP2 <- as.factor(spr_df_for_P2_SO1$WordTypeP2)
+contrasts(spr_df_for_P2_SO1$WordTypeP1) <- contr.sum(2)
+contrasts(spr_df_for_P2_SO1$WordTypeP2) <- contr.sum(2)
+```
+```{r}
+# Remove responses lesser than 100ms
+original <- nrow(spr_df_for_P2_SO1)
+paste0("Total entries: ", original)
+spr_df_for_P2_SO1 <- spr_df_for_P2_SO1 %>%
+    filter(Reading.time > 100)
+
+afterFilter <- nrow(spr_df_for_P2_SO1)
+paste0("Total entries with less than 100 ms response time for SO1: ", original - afterFilter)
+```
+```{r}
+# Remove responses greater than 5000ms
+original <- nrow(spr_df_for_P2_SO1)
+spr_df_filtered_for_P2 <- spr_df_for_P2_SO1 %>%
+    filter(Reading.time < 5000)
+
+afterFilter <- nrow(spr_df_for_P2_SO1)
+paste0("Total entries with greater than 5000 ms response time for SO1: ", original - afterFilter)
+```
+```{r}
+# Participant level exclusion: Any participant whose mean RT for ROI is greater than 2.5SD of the sample pool will be discarded
+spr_df_for_P2_SO1$p2LogRT <- log(spr_df_for_P2_SO1$Reading.time)
+participant_means <- spr_df_for_P2_SO1 %>%
+    group_by(user_id) %>%
+    summarize(mean_RT = mean(p2LogRT, na.rm = TRUE))
+
+meanRT <- mean(participant_means$mean_RT)
+sdRT <- sd(participant_means$mean_RT)
+threshold <- meanRT + 2.5 * sdRT
+participants_to_remove <- participant_means %>%
+    filter(mean_RT > threshold) %>%
+    select(user_id)
+
+spr_df_for_P2_SO1 <- spr_df_for_P2_SO1 %>%
+    filter(!user_id %in% participants_to_remove$user_id)
+
+paste0("Total participants discarded: ", unique(nrow(participants_to_remove)))
+```
+```{r}
+# Next criterion: Any responses to an item which is greater than 2.5SD from the mean will be discarded.
+# This is to remove the outlier items that are extremely hard for everyone
+item_means <- spr_df_for_P2_SO1 %>%
+    group_by(ItemID) %>%
+    summarize(mean_Item_RT = mean(p2LogRT, na.rm = TRUE))
+
+meanItemRT <- mean(item_means$mean_Item_RT)
+sdItemRT <- sd(item_means$mean_Item_RT)
+threshold <- meanItemRT + 2.5 * sdItemRT
+items_to_remove <- item_means %>%
+    filter(mean_Item_RT > threshold) %>%
+    select(ItemID)
+
+spr_df_for_P2_SO1 <- spr_df_for_P2_SO1 %>%
+    filter(!ItemID %in% items_to_remove$ItemID)
+paste0("Total items discarded: ", unique(nrow(items_to_remove)))
+```
+```{r}
+spr_df_for_P2_SO1$LexTALE_z <- scale(spr_df_for_P2_SO1$LexTALE, scale = TRUE, center = TRUE)
+spr_df_for_P2_SO1$wordLengthP2 <- nchar(spr_df_for_P2_SO1$Value)
+spr_df_for_P2_SO1$wordLengthP2_z <- scale(spr_df_for_P2_SO1$wordLengthP2, scale = TRUE, center = TRUE)
+```
+```{r}
+# Find spillover word English frequency from SUBTLEX-US
+matchesValue <- match(toupper(spr_df_for_P2_SO1$Value), toupper(subtlexus$Word))
+spr_df_for_P2_SO1$FreqP2_SO1 <- subtlexus$FREQlow[matchesValue]
+spr_df_for_P2_SO1$LogFreqP2_SO1 <- log10(spr_df_for_P2_SO1$FreqP2_SO1) + 1
+spr_df_for_P2_SO1$LogFreqP2_SO1_z <- scale(spr_df_for_P2_SO1$LogFreqP2_SO1, scale = TRUE, center = TRUE)
+```
+```{r}
+# Save the dataframe for future references
+write.csv(spr_df_for_P2_SO1, "D:/Studies/Thesis/Analysis/Inhibition-Control-Bilingual-Sentence-Processing/data/final analysis/P2_SO1.csv", row.names = FALSE)
+```
+```{r}
+# ============================================================
+# 2a. Spillover 1 Analysis - Confirmatory Model
+# ============================================================
+```
+```{r}
+p2_formula <- as.formula(
+    "p2LogRT ~ WordTypeP1 * WordTypeP2 * inhibition_control_score + wordLengthP2_z + LogFreqP2_SO1_z + (1 + WordTypeP1 * WordTypeP2| user_id) + (1 + WordTypeP1 * WordTypeP2| ItemID)"
+)
+base_model <- lmerTest::lmer(formula = p2_formula, data = spr_df_for_P2_SO1, )
+summary(base_model) # Convergence issues
+```
+```{r}
+#  Simplify the base formula to avoid convergence issues
+p2_formula <- as.formula(
+    "p2LogRT ~ WordTypeP1 * WordTypeP2 * inhibition_control_score + wordLengthP2_z + LogFreqP2_SO1_z + (1 + WordTypeP1 * WordTypeP2| user_id) + (1 + WordTypeP2| ItemID)"
+)
+base_model <- lmerTest::lmer(formula = p2_formula, data = spr_df_for_P2_SO1)
+summary(base_model)
+```
+```{r}
+# Remove wordLengthP2_z
+model_without_wordLengthP2_z <- update(base_model, . ~ . - wordLengthP2_z)
+summary(model_without_wordLengthP2_z) # Convergence issues
+```
+```{r}
+# Remove WordTypeP1 slope from user slope
+model_without_cond1_user <- update(base_model, . ~ . - (1 + WordTypeP1 * WordTypeP2 | user_id) + (1 + WordTypeP2 | user_id))
+anova(model_without_cond1_user, base_model)
+```
+```{r}
+# Remove WordTypeP2 slope from Item slope
+model_without_item_slp <- update(model_without_cond1_user, . ~ . - (1 + WordTypeP2 | ItemID) + (1 | ItemID))
+anova(model_without_item_slp, model_without_cond1_user) # Slope for item is needed
+```
+```{r}
+# Remove WordTypeP2 from user slope
+model_without_user_slp <- update(model_without_cond1_user, . ~ . - (1 + WordTypeP2 | user_id) + (1 | user_id))
+anova(model_without_user_slp, model_without_cond1_user)
+```
+```{r}
+# model_without_cond1_user is the best model without any convergence issues
+summary(model_without_user_slp)
+saveRDS(model_without_user_slp, "P2_SO1_Base_lmer_no_slopes.rds")
+```
+```{r}
+P2_P1_so1_base_emmeans <- emmeans(model_without_user_slp, ~ WordTypeP2 | WordTypeP1)
+P2_P1_so1_base_emmeans
+pairs(P2_P1_so1_base_emmeans, by = "WordTypeP2")
+contrast(P2_P1_so1_base_emmeans, interaction = "pairwise", by = NULL)
+```
+```{r}
+# ============================================================
+# 2a. Spillover 1 Analysis - Exploratory Model
+# ============================================================
+```
+```{r}
+# Now on to exploratory analysis
+# Now, exploratory analysis by including the LexTALE score of participants
+# LexTALE_z * LogFreqP2_z and WordTypeP1 * WordTypeP2 * LexTALE_z
+exp_formula_SO1 <- as.formula(
+    "p2LogRT ~ WordTypeP1 * WordTypeP2 * inhibition_control_score + WordTypeP1 * WordTypeP2 * LexTALE_z + wordLengthP2_z + LexTALE_z * LogFreqP2_SO1_z + (1 + WordTypeP1 * WordTypeP2| user_id) + (1 + WordTypeP1 * WordTypeP2| ItemID)"
+)
+exp_model_ROI <- lmerTest::lmer(formula = exp_formula_SO1, data = spr_df_for_P2_SO1, )
+summary(exp_model_ROI)
+```
+```{r}
+# Convergence issues.
+exp_formula_SO1 <- as.formula(
+    "p2LogRT ~ WordTypeP1 * WordTypeP2 * inhibition_control_score + WordTypeP1 * WordTypeP2 * LexTALE_z + wordLengthP2_z + LexTALE_z * LogFreqP2_SO1_z + (1 + WordTypeP2| user_id) + (1 + WordTypeP1 * WordTypeP2| ItemID)"
+)
+exp_model_ROI <- lmerTest::lmer(formula = exp_formula_SO1, data = spr_df_for_P2_SO1, )
+summary(exp_model_ROI)
+```
+```{r}
+# Convergence issues.
+exp_formula_SO1 <- as.formula(
+    "p2LogRT ~ WordTypeP1 * WordTypeP2 * inhibition_control_score + WordTypeP1 * WordTypeP2 * LexTALE_z + wordLengthP2_z + LexTALE_z * LogFreqP2_SO1_z + (1 + WordTypeP2| user_id) + (1 +  WordTypeP2| ItemID)"
+)
+exp_model_ROI <- lmerTest::lmer(formula = exp_formula_SO1, data = spr_df_for_P2_SO1, )
+summary(exp_model_ROI)
+```
+```
+```{r}
+# Remove LexTALE_z:LogFreqP2_SO1_z
+model_without_LexTALE_z_LogFreqP2_SO1_z <- update(exp_model_ROI, . ~ . - LexTALE_z:LogFreqP2_SO1_z)
+summary(model_without_LexTALE_z_LogFreqP2_SO1_z)
+anova(model_without_LexTALE_z_LogFreqP2_SO1_z, exp_model_ROI)
+```
+```{r}
+# Remove wordLengthP2_z
+model_without_wordLengthP2_z <- update(model_without_LexTALE_z_LogFreqP2_SO1_z, . ~ . - wordLengthP2_z)
+summary(model_without_wordLengthP2_z)
+anova(model_without_wordLengthP2_z, model_without_LexTALE_z_LogFreqP2_SO1_z)
+```
+```{r}
+# Remove user_id's WordTypeP2 random slope
+model_without_user_slp <- update(model_without_wordLengthP2_z, . ~ . - (1 + WordTypeP2 | user_id) + (1 | user_id))
+anova(model_without_user_slp, model_without_wordLengthP2_z)
+```
+```{r}
+# model_without_user_slp is the best model
+summary(model_without_user_slp)
+saveRDS(model_without_user_slp, "P2_SO1_Exp_lmer_no_slopes.rds")
+```
+```{r}
+P2_P1_SO1_exp_emmeans <- emmeans(model_without_wordLengthP2_z, ~ WordTypeP2 | WordTypeP1)
+P2_P1_SO1_exp_emmeans
+pairs(P2_P1_SO1_exp_emmeans, by = "WordTypeP2")
+```
+```{r}
+# ============================================================
+# 3. Spillover 2 Analysis
+# ============================================================
+```
+```{r}
+spr_df_for_P2_SO2 <- spr_df_filtered %>%
+    left_join(materials_df %>% select(SentenceID, Post.Critical.Position.Index, WordatP2),
+        by = "SentenceID"
+    ) %>%
+    filter(Parameter == Post.Critical.Position.Index + 2)
+
+spr_df_for_P2_SO2$WordTypeP1 <- as.factor(spr_df_for_P2_SO2$WordTypeP1)
+spr_df_for_P2_SO2$WordTypeP2 <- as.factor(spr_df_for_P2_SO2$WordTypeP2)
+contrasts(spr_df_for_P2_SO2$WordTypeP1) <- contr.sum(2)
+contrasts(spr_df_for_P2_SO2$WordTypeP2) <- contr.sum(2)
+```
+```{r}
+# Remove responses lesser than 100ms
+original <- nrow(spr_df_for_P2_SO2)
+paste0("Total entries", original)
+spr_df_for_P2_SO2 <- spr_df_for_P2_SO2 %>%
+    filter(Reading.time > 100)
+
+afterFilter <- nrow(spr_df_for_P2_SO2)
+paste0("Total entries with less than 100 ms response time for SO2:", original - afterFilter)
+```
+```{r}
+# Remove responses greater than 5000ms
+original <- nrow(spr_df_for_P2_SO2)
+spr_df_for_P2_SO2 <- spr_df_for_P2_SO2 %>%
+    filter(Reading.time < 5000)
+
+afterFilter <- nrow(spr_df_for_P2_SO2)
+paste0("Total entries with greater than 5000 ms response time for SO2:", original - afterFilter)
+```
+```{r}
+# Participant level exclusion: Any participant whose mean RT for ROI is greater than 2.5SD of the sample pool will be discarded
+# It is better to use the log RT instead of RT. Anyway, it is necessary for our modelling too!
+spr_df_for_P2_SO2$p2LogRT <- log(spr_df_for_P2_SO2$Reading.time)
+hist(spr_df_for_P2_SO2$p2LogRT)
+participant_means <- spr_df_for_P2_SO2 %>%
+    group_by(user_id) %>%
+    summarize(mean_RT = mean(p2LogRT, na.rm = TRUE))
+
+meanRT <- mean(participant_means$mean_RT)
+sdRT <- sd(participant_means$mean_RT)
+threshold <- meanRT + 2.5 * sdRT
+participants_to_remove <- participant_means %>%
+    filter(mean_RT > threshold) %>%
+    select(user_id)
+
+spr_df_for_P2_SO2 <- spr_df_for_P2_SO2 %>%
+    filter(!user_id %in% participants_to_remove$user_id)
+
+paste0("Total participants discarded: ", unique(nrow(participants_to_remove)))
+```
+```{r}
+# Next criterion: Any responses to an item which is greater than 2.5SD from the mean will be discarded.
+# This is to remove the outlier items that are extremely hard for everyone
+item_means <- spr_df_for_P2_SO2 %>%
+    group_by(ItemID) %>%
+    summarize(mean_Item_RT = mean(p2LogRT, na.rm = TRUE))
+
+meanItemRT <- mean(item_means$mean_Item_RT)
+sdItemRT <- sd(item_means$mean_Item_RT)
+threshold <- meanItemRT + 2.5 * sdItemRT
+items_to_remove <- item_means %>%
+    filter(mean_Item_RT > threshold) %>%
+    select(ItemID)
+
+spr_df_for_P2_SO2 <- spr_df_for_P2_SO2 %>%
+    filter(!ItemID %in% items_to_remove$ItemID)
+paste0("Total items discarded: ", unique(nrow(items_to_remove)))
+```
+```{r}
+spr_df_for_P2_SO2$LexTALE_z <- scale(spr_df_for_P2_SO2$LexTALE, scale = TRUE, center = TRUE)
+spr_df_for_P2_SO2$wordLengthP2 <- nchar(spr_df_for_P2_SO2$Value)
+spr_df_for_P2_SO2$wordLengthP2_z <- scale(spr_df_for_P2_SO2$wordLengthP2, scale = TRUE, center = TRUE)
+```
+```{r}
+# Include the word frequency of spillover words
+matchesValue <- match(toupper(spr_df_for_P2_SO2$Value), toupper(subtlexus$Word))
+spr_df_for_P2_SO2$FreqP2_SO2 <- subtlexus$FREQlow[matchesValue]
+spr_df_for_P2_SO2$LogFreqP2_SO2 <- log10(spr_df_for_P2_SO2$FreqP2_SO2) + 1
+spr_df_for_P2_SO2$LogFreqP2_SO2_z <- scale(spr_df_for_P2_SO2$LogFreqP2_SO2, scale = TRUE, center = TRUE)
+```
+```{r}
+# ============================================================
+# 3a. Spillover 2 Analysis - Confirmatory Model
+# ============================================================
+```
+```{r}
+p2_formula <- as.formula(
+    "p2LogRT ~ WordTypeP1 * WordTypeP2 * inhibition_control_score + wordLengthP2_z + LogFreqP2_SO2_z + (1 + WordTypeP1 * WordTypeP2| user_id) + (1 + WordTypeP1 * WordTypeP2| ItemID)"
+)
+base_model <- lmerTest::lmer(formula = p2_formula, data = spr_df_for_P2_SO2)
+summary(base_model)
+```
+```{r}
+# Remove LogFreqP2_SO2_z
+model_without_LogFreqP2_SO2_z <- update(base_model, . ~ . - LogFreqP2_SO2_z)
+summary(model_without_LogFreqP2_SO2_z)
+anova(base_model, model_without_LogFreqP2_SO2_z)
+```
+```{r}
+# Remove the WordTypeP1 from random slope of item
+model_without_cond1_items <- update(model_without_LogFreqP2_SO2_z, . ~ . - (1 + WordTypeP1 * WordTypeP2 | ItemID) + (1 + WordTypeP2 | ItemID))
+anova(model_without_LogFreqP2_SO2_z, model_without_cond1_items)
+summary(model_without_cond1_items)
+```
+```{r}
+# In case of singularity, my main aim is to simplify the random slope by removing the interaction of WordTypeP1.
+# So, when the above model has singularity problem, I will remove the random slope of WordTypeP1 for
+# users and check the model fit.
+# Remove WordTypeP1 from random slope of user
+model_without_cond1_users <- update(model_without_cond1_items, . ~ . - (1 + WordTypeP1 * WordTypeP2 | user_id) + (1 + WordTypeP2 | user_id))
+anova(model_without_cond1_users, model_without_cond1_items)
+```
+```{r}
+# Nothing to remove
+summary(model_without_cond1_users)
+saveRDS(model_without_cond1_users, "P2_SO2_Base_lmer_no_slopes.rds")
+```
+```{r}
+P2_P1_SO2_base_emmeans <- emmeans(model_without_cond1_users, ~ WordTypeP2 | WordTypeP1)
+P2_P1_SO2_base_emmeans
+pairs(P2_P1_SO2_base_emmeans, by = "WordTypeP2")
+```
+```{r}
+# ============================================================
+# 3b. Spillover 2 Analysis - Exploratory Model
+# ============================================================
+```
+```{r}
+exp_formula_SO2 <- as.formula(
+    "p2LogRT ~ WordTypeP1 * WordTypeP2 * inhibition_control_score + WordTypeP1 * WordTypeP2 * LexTALE_z + wordLengthP2_z + LexTALE_z * LogFreqP2_SO2_z + (1 + WordTypeP1 * WordTypeP2| user_id) + (1 + WordTypeP1 * WordTypeP2| ItemID)"
+)
+exp_model_SO2_exp <- lmerTest::lmer(formula = exp_formula_SO2, data = spr_df_for_P2_SO2, )
+summary(exp_model_SO2_exp)
+```
+```{r}
+# Remove LexTALE_z:LogFreqP2_SO2_z
+model_without_LexTALE_z_LogFreqP2_SO2_z <- update(exp_model_SO2_exp, . ~ . - LexTALE_z:LogFreqP2_SO2_z)
+summary(model_without_LexTALE_z_LogFreqP2_SO2_z) # Converegnce issues, go back to original model
+```
+```{r}
+# Remove wordlengthP2_z
+model_without_wordLengthP2_z <- update(exp_model_SO2_exp, . ~ . - wordLengthP2_z)
+summary(model_without_wordLengthP2_z) # Convergence issues,  go back to original model
+```
+```{r}
+# Remove WordTypeP1 from random slope of Item
+model_without_cond1_items <- update(exp_model_SO2_exp, . ~ . - (1 + WordTypeP1 * WordTypeP2 | ItemID) + (1 + WordTypeP2 | ItemID))
+anova(exp_model_SO2_exp, model_without_cond1_items) # Convergence issues,  go back to original model
+```
+```{r}
+# Remove WordTypeP1 from random slope of user
+model_without_cond1_users <- update(exp_model_SO2_exp, . ~ . - (1 + WordTypeP1 * WordTypeP2 | user_id) + (1 + WordTypeP2 | user_id))
+anova(model_without_cond1_users, exp_model_SO2_exp)
+summary(model_without_cond1_users)
+```
+```{r}
+# Remove LexTALE_z:LogFreqP2_SO2_z
+model_without_LexTALE_z_LogFreqP2_SO2_z <- update(model_without_cond1_users, . ~ . - LexTALE_z:LogFreqP2_SO2_z)
+anova(model_without_LexTALE_z_LogFreqP2_SO2_z, model_without_cond1_users)
+```
+```{r}
+# Remove LogFreqP2_SO2_z
+model_without_LogFreqP2_SO2_z <- update(model_without_LexTALE_z_LogFreqP2_SO2_z, . ~ . - LogFreqP2_SO2_z)
+anova(model_without_LogFreqP2_SO2_z, model_without_LexTALE_z_LogFreqP2_SO2_z)
+```
+```{r}
+# Remove wordLengthP2_z
+model_without_wordLengthP2_z <- update(model_without_LogFreqP2_SO2_z, . ~ . - wordLengthP2_z)
+summary(model_without_wordLengthP2_z)
+anova(model_without_wordLengthP2_z, model_without_LogFreqP2_SO2_z)
+```
+```{r}
+# model_without_LogFreqP2_SO2_z is better
+# Simplify the model by removing the WordTypeP1 slope at Items
+model_without_cond1_items <- update(model_without_LogFreqP2_SO2_z, . ~ . - (1 + WordTypeP1 * WordTypeP2 | ItemID) + (1 + WordTypeP2 | ItemID))
+anova(model_without_LogFreqP2_SO2_z, model_without_cond1_items)
+```
+```{r}
+# model_without_LogFreqP2_SO2_z is the best model
+summary(model_without_cond1_items)
+saveRDS(model_without_cond1_items, "P2_SO2_Exp_lmer_no_slopes.rds")
+```
+```{r}
+P2_P1_SO2_exp_emmeans <- emmeans(model_without_cond1_items, ~ WordTypeP2 | WordTypeP1)
+P2_P1_SO2_exp_emmeans
+pairs(P2_P1_SO2_exp_emmeans, by = "WordTypeP2")
+```

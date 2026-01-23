@@ -1,0 +1,1094 @@
+```{r}
+# ============================================================
+# Title:    Plots Script
+# Project:  Individual Differences of Inhibition Control in Bilingual Sentence Processing: A Self Paced Reading Approach
+# OSF:      https://osf.io/uyvxw
+# Author:   Niranjana Hegde Bhimanakone Satyanarayana
+# Created:  19/12/2025
+# R version: 4.3.2
+#
+# Description:
+# This script uses linear-mixed effects models and ggeffects (or emmeans, based on the requirement)
+# and plots the relationship between the response variable (self-paced reading times) and our
+# predictor variables for positions P1 and P2.
+#
+# Note:
+# In this file, following shorthand notations are used:
+#       - Base - Confirmatory Model
+#       - Exp  - Exploratory Model
+#       - ROI  - Region of interest where the target words are placed
+#       - SO1  - Spillover 1
+#       - SO2  - Spillover 2
+# ============================================================
+```
+```{r}
+# Load the libraries
+library(tidyr)
+library(ggplot2)
+library(dplyr)
+library(ggeffects)
+library(emmeans)
+library(stringr)
+```
+```{r}
+# Load models and dataframes
+p1_roi_base_model <- readRDS("D:/Studies/Thesis/Analysis/P1_ROI_Base_lmer_no_slopes.rds")
+p1_roi_exp_model <- readRDS("D:/Studies/Thesis/Analysis/P1_ROI_Exp_lmer_no_slopes.rds")
+p1_so1_base_model <- readRDS("D:/Studies/Thesis/Analysis/P1_SO1_Base_lmer_no_slopes.rds")
+p1_so1_exp_model <- readRDS("D:/Studies/Thesis/Analysis/P1_SO1_Exp_lmer_no_slopes.rds")
+p1_so2_base_model <- readRDS("D:/Studies/Thesis/Analysis/P1_SO2_Base_lmer_no_slopes.rds")
+p1_so2_exp_model <- readRDS("D:/Studies/Thesis/Analysis/P1_SO2_Exp_lmer_no_slopes.rds")
+p2_roi_base_model <- readRDS("D:/Studies/Thesis/Analysis/P2_ROI_Base_lmer_no_slopes.rds")
+p2_roi_exp_model <- readRDS("D:/Studies/Thesis/Analysis/P2_ROI_Exp_lmer_no_slopes.rds")
+p2_so1_base_model <- readRDS("D:/Studies/Thesis/Analysis/P2_SO1_Base_lmer_no_slopes.rds")
+p2_so1_exp_model <- readRDS("D:/Studies/Thesis/Analysis/P2_SO1_Exp_lmer_no_slopes.rds")
+p2_so2_base_model <- readRDS("D:/Studies/Thesis/Analysis/P2_SO2_Base_lmer_no_slopes.rds")
+p2_so2_exp_model <- readRDS("D:/Studies/Thesis/Analysis/P2_SO2_Exp_lmer_no_slopes.rds")
+p1_roi_df <- read.csv("D:/Studies/Thesis/Analysis/Inhibition-Control-Bilingual-Sentence-Processing/data/final analysis/P1_ROI.csv")
+p1_so1_df <- read.csv("D:/Studies/Thesis/Analysis/Inhibition-Control-Bilingual-Sentence-Processing/data/final analysis/P1_SO1.csv")
+p2_roi_df <- read.csv("D:/Studies/Thesis/Analysis/Inhibition-Control-Bilingual-Sentence-Processing/data/final analysis/P2_ROI.csv")
+p2_so1_df <- read.csv("D:/Studies/Thesis/Analysis/Inhibition-Control-Bilingual-Sentence-Processing/data/final analysis/P2_SO1.csv")
+plot_path <- "D:/Studies/Thesis/Analysis/Inhibition-Control-Bilingual-Sentence-Processing/Plots/lmer/final"
+```
+```{r}
+# ============================================================
+# 1. Position P1
+# ============================================================
+```
+```{r}
+# ============================================================
+# 1a. ROI Plots
+# ============================================================
+```
+```{r}
+# Looking at the main effects of WordTypeP1 using the ROI Confirmatory Model
+preds_P1_roi_base <- as.data.frame(ggpredict(p1_roi_base_model, terms = "WordTypeP1", type = "fixed", bias_correction = TRUE))
+preds_P1_roi_base
+preds_P1_roi_base_plot <- ggplot(preds_P1_roi_base, aes(x = x, y = predicted)) +
+    geom_line(aes(group = 1), size = 1) +
+    geom_errorbar(aes(ymin = conf.low, ymax = conf.high), width = 0.2) +
+    labs(
+        x = "P1 Word Types",
+        y = "Predicted Log Reading Time",
+        title = str_wrap("Predicted log reading times at ROI for P1 Word Types (Confirmatory Model)", width = 60),
+    ) +
+    theme_minimal(base_size = 12) +
+    theme(
+        plot.title = element_text(hjust = 0.5, size = 14),
+        legend.title = element_text(size = 10),
+        legend.text = element_text(size = 10)
+    )
+ggsave(filename = file.path(plot_path, "P1", "preds_P1_roi_base_plot.png"), preds_P1_roi_base_plot, width = 6, height = 6, dpi = 300)
+```
+```{r}
+# Plot the effects of WordTypeP1 and inhibition control score
+# ROI Confirmatory model
+preds_P1_inhib_p1_roi_base <- as.data.frame(ggpredict(p1_roi_base_model, terms = c("WordTypeP1", "inhibition_control_score [all]"), type = "fixed", bias_correction = TRUE))
+preds_P1_inhib_p1_roi_base <- preds_P1_inhib_p1_roi_base %>%
+    rename(inhib_score = group)
+
+preds_P1_inhib_p1_roi_base$inhib_score <- as.numeric(as.character(preds_P1_inhib_p1_roi_base$inhib_score))
+preds_P1_inhib_p1_roi_base_plot <- ggplot(preds_P1_inhib_p1_roi_base, aes(x = inhib_score, y = predicted, color = x)) +
+    geom_line(size = 1) +
+    geom_ribbon(aes(ymin = conf.low, ymax = conf.high, fill = x), alpha = 0.2, color = NA) +
+    labs(
+        x = "Inhibition Control Score(Scaled)",
+        y = "Predicted Log Reading Time",
+        title = str_wrap("Predicted log reading times of P1 Word Types at ROI based on Inhibition Control Score (Confirmatory Model)", width = 60),
+        color = "P1 Word Types",
+        fill = "P1 Word Types"
+    ) +
+    theme_minimal(base_size = 12) +
+    theme(
+        plot.title = element_text(hjust = 0.5, size = 14),
+        legend.title = element_text(size = 8),
+        legend.text = element_text(size = 10)
+    )
+ggsave(filename = file.path(plot_path, "P1", "preds_P1_inhib_p1_roi_base_plot.png"), preds_P1_inhib_p1_roi_base_plot, width = 6, height = 6, dpi = 300)
+```
+
+```{r}
+# Looking at the main effects of WordTypeP1 using the ROI Exploratory Model
+preds_P1_roi_exp <- as.data.frame(ggpredict(p1_roi_exp_model, terms = "WordTypeP1", type = "fixed", bias_correction = TRUE))
+
+preds_P1_roi_exp_plot <- ggplot(preds_P1_roi_exp, aes(x = x, y = predicted)) +
+    geom_line(aes(group = 1), size = 1) +
+    geom_errorbar(aes(ymin = conf.low, ymax = conf.high), width = 0.2) +
+    labs(
+        x = "P1 Word Types",
+        y = "Predicted Log Reading Time",
+        title = str_wrap("Predicted log reading times at ROI for P1 Word Types (Exploratory Model)", width = 60),
+    ) +
+    theme_minimal(base_size = 12) +
+    theme(
+        plot.title = element_text(hjust = 0.5, size = 14),
+        legend.title = element_text(size = 10),
+        legend.text = element_text(size = 10)
+    )
+ggsave(filename = file.path(plot_path, "P1", "preds_P1_roi_exp_plot.png"), preds_P1_roi_exp_plot, width = 6, height = 6, dpi = 300)
+```
+```{r}
+# Plot the effects of WordTypeP1 and inhibition control score
+# ROI Exp model
+preds_P1_inhib_p1_roi_exp <- as.data.frame(ggpredict(p1_roi_exp_model, terms = c("WordTypeP1", "inhibition_control_score [all]"), type = "fixed", bias_correction = TRUE))
+preds_P1_inhib_p1_roi_exp <- preds_P1_inhib_p1_roi_exp %>%
+    rename(inhib_score = group)
+
+preds_P1_inhib_p1_roi_exp$inhib_score <- as.numeric(as.character(preds_P1_inhib_p1_roi_exp$inhib_score))
+preds_P1_inhib_p1_roi_exp_plot <- ggplot(preds_P1_inhib_p1_roi_exp, aes(x = inhib_score, y = predicted, color = x)) +
+    geom_line(size = 1) +
+    geom_ribbon(aes(ymin = conf.low, ymax = conf.high, fill = x), alpha = 0.2, color = NA) +
+    labs(
+        x = "Inhibition Control Score(Scaled)",
+        y = "Predicted Log Reading Time",
+        title = str_wrap("Predicted log reading times of P1 Word Types at ROI based on Inhibition Control Score (Exploratory Model)", width = 60),
+        color = "P1 Word Types",
+        fill = "P1 Word Types"
+    ) +
+    theme_minimal(base_size = 12) +
+    theme(
+        plot.title = element_text(hjust = 0.5, size = 14),
+        legend.title = element_text(size = 8),
+        legend.text = element_text(size = 10)
+    )
+ggsave(filename = file.path(plot_path, "P1", "preds_P1_inhib_p1_roi_exp_plot.png"), preds_P1_inhib_p1_roi_exp_plot, width = 6, height = 6, dpi = 300)
+```
+```{r}
+# P1 ROI Confirmatory Model had a significant effect of word length on reading times
+preds_wordLength_p1_roi_base <- as.data.frame(ggpredict(p1_roi_base_model, terms = c("wordLengthP1_z [all]"), type = "fixed", bias_correction = TRUE))
+preds_wordLength_p1_roi_base_plot <- ggplot(preds_wordLength_p1_roi_base, aes(x = x, y = predicted)) +
+    geom_line(aes(group = 1), size = 1) +
+    geom_ribbon(aes(ymin = conf.low, ymax = conf.high), alpha = 0.2, color = NA) +
+    labs(
+        x = "Word Length (Scaled)",
+        y = "Predicted Log Reading Time",
+        title = str_wrap("Predicted log reading times at ROI based on Scaled Word Length (Confirmatory Model)", width = 60),
+    ) +
+    theme_minimal(base_size = 12) +
+    theme(
+        plot.title = element_text(hjust = 0.5, size = 14),
+    )
+ggsave(filename = file.path(plot_path, "P1", "wordLength_p1_roi_base_plot.png"), preds_wordLength_p1_roi_base_plot, width = 6, height = 6, dpi = 300)
+```
+```{r}
+# P1 ROI Exploratory Model had a significant effect of word length on reading times
+preds_wordLength_p1_roi_exp <- as.data.frame(ggpredict(p1_roi_exp_model, terms = c("wordLengthP1_z [all]"), type = "fixed", bias_correction = TRUE))
+preds_wordLength_p1_roi_exp_plot <- ggplot(preds_wordLength_p1_roi_exp, aes(x = x, y = predicted)) +
+    geom_line(aes(group = 1), size = 1) +
+    geom_ribbon(aes(ymin = conf.low, ymax = conf.high), alpha = 0.2, color = NA) +
+    labs(
+        x = "Word Length (Scaled)",
+        y = "Predicted Log Reading Time",
+        title = str_wrap("Predicted log reading times at ROI based on Scaled Word Length (Exploratory Model)", width = 60),
+    ) +
+    theme_minimal(base_size = 12) +
+    theme(
+        plot.title = element_text(hjust = 0.5, size = 14),
+    )
+ggsave(filename = file.path(plot_path, "P1", "wordLength_p1_roi_exp_plot.png"), preds_wordLength_p1_roi_exp_plot, width = 6, height = 6, dpi = 300)
+```
+```{r}
+# P1 ROI also has a significant interaction effect of LexTALE and inhibition_control_score for exploratory model
+# Plot it by binning the LexTALE into 3 categories based on the LexTALE score
+preds_inhib_lexTale_p1_roi_exp <- as.data.frame(ggpredict(
+    p1_roi_exp_model,
+    terms = c("inhibition_control_score [all]", "LexTALE_z[0.33, 0.5, 0.66]"),
+    type = "fixed",
+    bias_correction = TRUE
+))
+
+preds_inhib_lexTale_p1_roi_exp <- preds_inhib_lexTale_p1_roi_exp %>%
+    rename(LexTALE = group, inhib_score = x) %>%
+    mutate(
+        LexTALE_Binned = case_when(
+            LexTALE == "0.33" ~ "Low LexTALE",
+            LexTALE == "0.5" ~ "Medium LexTALE",
+            LexTALE == "0.66" ~ "High LexTALE"
+        )
+    )
+
+preds_inhib_lexTale_p1_roi_exp$inhib_score <- as.numeric(as.character(preds_inhib_lexTale_p1_roi_exp$inhib_score))
+preds_inhib_lexTale_p1_roi_exp_plot <- ggplot(preds_inhib_lexTale_p1_roi_exp, aes(x = inhib_score, y = predicted, color = LexTALE_Binned)) +
+    geom_line(size = 1) +
+    geom_ribbon(aes(ymin = conf.low, ymax = conf.high, fill = LexTALE_Binned), alpha = 0.2, color = NA) +
+    labs(
+        x = "Inhibition Control Score (Scaled)",
+        y = "Predicted Log Reading Time",
+        title = str_wrap("Predicted log reading times at P1 ROI by inhibition control and LexTALE proficiency (Exploratory Model)", width = 60),
+        color = "Binned LexTALE Score",
+        fill = "Binned LexTALE Score"
+    ) +
+    theme_minimal(base_size = 12) +
+    theme(
+        plot.title = element_text(hjust = 0.5, size = 14),
+        legend.title = element_text(size = 8),
+        legend.text = element_text(size = 7)
+    )
+ggsave(filename = file.path(plot_path, "P1", "preds_inhib_lexTale_p1_roi_exp_plot.png"), preds_inhib_lexTale_p1_roi_exp_plot, width = 6, height = 6, dpi = 300)
+```
+```{r}
+# ============================================================
+# 1b. Spillover 1 Plots
+# ============================================================
+```
+```{r}
+# P1 Confirmatory Model main effects of WordTypeP1
+preds_P1_so1_base <- as.data.frame(ggpredict(p1_so1_base_model, terms = "WordTypeP1", type = "fixed", bias_correction = TRUE))
+
+preds_P1_so1_base_plot <- ggplot(preds_P1_so1_base, aes(x = x, y = predicted)) +
+    geom_line(aes(group = 1), size = 1) +
+    geom_errorbar(aes(ymin = conf.low, ymax = conf.high), width = 0.2) +
+    labs(
+        x = "P1 Word Types",
+        y = "Predicted Log Reading Time",
+        title = str_wrap("Predicted log reading times at ROI for P1 Word Types (Confirmatory Model)", width = 60),
+    ) +
+    theme_minimal(base_size = 12) +
+    theme(
+        plot.title = element_text(hjust = 0.5, size = 14),
+        legend.title = element_text(size = 10),
+        legend.text = element_text(size = 10)
+    )
+ggsave(filename = file.path(plot_path, "P1", "preds_P1_so1_base_plot.png"), preds_P1_so1_base_plot, width = 6, height = 6, dpi = 300)
+```
+```{r}
+# P1 Confirmatory Model interaction effects of WordTypeP1 and inhibition_control_score
+preds_P1_inhib_p1_so1_base <- as.data.frame(ggpredict(p1_so1_base_model, terms = c("WordTypeP1", "inhibition_control_score [all]"), type = "fixed", bias_correction = TRUE))
+preds_P1_inhib_p1_so1_base <- preds_P1_inhib_p1_so1_base %>%
+    rename(inhib_score = group)
+
+preds_P1_inhib_p1_so1_base$inhib_score <- as.numeric(as.character(preds_P1_inhib_p1_so1_base$inhib_score))
+preds_P1_inhib_p1_so1_base_plot <- ggplot(preds_P1_inhib_p1_so1_base, aes(x = inhib_score, y = predicted, color = x)) +
+    geom_line(size = 1) +
+    geom_ribbon(aes(ymin = conf.low, ymax = conf.high, fill = x), alpha = 0.2, color = NA) +
+    labs(
+        x = "Inhibition Control Score (Scaled)",
+        y = "Predicted Log Reading Time",
+        title = str_wrap("Predicted log reading times of P1 Word Types at ROI based on Inhibition Control Score (Confirmatory Model)", width = 60),
+        color = "P1 Word Types",
+        fill = "P1 Word Types"
+    ) +
+    theme_minimal(base_size = 12) +
+    theme(
+        plot.title = element_text(hjust = 0.5, size = 14),
+        legend.title = element_text(size = 8),
+        legend.text = element_text(size = 10)
+    )
+ggsave(filename = file.path(plot_path, "P1", "preds_P1_inhib_p1_so1_base_plot.png"), preds_P1_inhib_p1_so1_base_plot, width = 6, height = 6, dpi = 300)
+```
+```{r}
+# P1 Exploratory Model main effects of WordTypeP1
+preds_P1_so1_exp <- as.data.frame(ggpredict(p1_so1_exp_model, terms = "WordTypeP1", type = "fixed", bias_correction = TRUE))
+
+preds_P1_so1_exp_plot <- ggplot(preds_P1_so1_exp, aes(x = x, y = predicted)) +
+    geom_line(aes(group = 1), size = 1) +
+    geom_errorbar(aes(ymin = conf.low, ymax = conf.high), width = 0.2) +
+    labs(
+        x = "P1 Word Types",
+        y = "Predicted Log Reading Time",
+        title = str_wrap("Predicted log reading times at ROI for P1 Word Types (Exploratory Model)", width = 60),
+    ) +
+    theme_minimal(base_size = 12) +
+    theme(
+        plot.title = element_text(hjust = 0.5, size = 14),
+        legend.title = element_text(size = 10),
+        legend.text = element_text(size = 10)
+    )
+ggsave(filename = file.path(plot_path, "P1", "preds_P1_so1_exp_plot.png"), preds_P1_so1_exp_plot, width = 6, height = 6, dpi = 300)
+```
+```{r}
+# P1 exploratory Model interaction effects of WordTypeP1 and inhibition_control_score
+preds_P1_inhib_p1_so1_exp <- as.data.frame(ggpredict(p1_so1_exp_model, terms = c("WordTypeP1", "inhibition_control_score [all]"), type = "fixed", bias_correction = TRUE))
+preds_P1_inhib_p1_so1_exp <- preds_P1_inhib_p1_so1_exp %>%
+    rename(inhib_score = group)
+
+preds_P1_inhib_p1_so1_exp$inhib_score <- as.numeric(as.character(preds_P1_inhib_p1_so1_exp$inhib_score))
+preds_P1_inhib_p1_so1_exp_plot <- ggplot(preds_P1_inhib_p1_so1_exp, aes(x = inhib_score, y = predicted, color = x)) +
+    geom_line(size = 1) +
+    geom_ribbon(aes(ymin = conf.low, ymax = conf.high, fill = x), alpha = 0.2, color = NA) +
+    labs(
+        x = "Inhibition Control Score (Scaled)",
+        y = "Predicted Log Reading Time",
+        title = str_wrap("Predicted log reading times of P1 Word Types at ROI based on Inhibition Control Score (Exploratory Model)", width = 60),
+        color = "P1 Word Types",
+        fill = "P1 Word Types"
+    ) +
+    theme_minimal(base_size = 12) +
+    theme(
+        plot.title = element_text(hjust = 0.5, size = 14),
+        legend.title = element_text(size = 8),
+        legend.text = element_text(size = 10)
+    )
+ggsave(filename = file.path(plot_path, "P1", "preds_P1_inhib_p1_so1_exp_plot.png"), preds_P1_inhib_p1_so1_exp_plot, width = 6, height = 6, dpi = 300)
+```
+```{r}
+# P1 SO1 also has a significant interaction effect of LexTALE and inhibition_control_score
+# Plot it by binning the LexTALE into 3 categories based on the LexTALE score
+preds_inhib_lexTale_p1_so1_exp <- as.data.frame(ggpredict(
+    p1_so1_exp_model,
+    terms = c("inhibition_control_score [all]", "LexTALE_z[0.33, 0.5, 0.66]"),
+    type = "fixed",
+    bias_correction = TRUE
+))
+
+preds_inhib_lexTale_p1_so1_exp <- preds_inhib_lexTale_p1_so1_exp %>%
+    rename(LexTALE = group, inhib_score = x) %>%
+    mutate(
+        LexTALE_Binned = case_when(
+            LexTALE == "0.33" ~ "Low LexTALE",
+            LexTALE == "0.5" ~ "Medium LexTALE",
+            LexTALE == "0.66" ~ "High LexTALE"
+        )
+    )
+
+preds_inhib_lexTale_p1_so1_exp$inhib_score <- as.numeric(as.character(preds_inhib_lexTale_p1_so1_exp$inhib_score))
+preds_inhib_lexTale_p1_so1_exp_plot <- ggplot(preds_inhib_lexTale_p1_so1_exp, aes(x = inhib_score, y = predicted, color = LexTALE_Binned)) +
+    geom_line(size = 1) +
+    geom_ribbon(aes(ymin = conf.low, ymax = conf.high, fill = LexTALE_Binned), alpha = 0.2, color = NA) +
+    labs(
+        x = "Inhibition Control Score (Scaled)",
+        y = "Predicted Log Reading Time",
+        title = str_wrap("Predicted log reading times at P1 Spillover 1 by inhibition control and LexTALE proficiency (Exploratory Model)", width = 60),
+        color = "Binned LexTALE Score",
+        fill = "Binned LexTALE Score"
+    ) +
+    theme_minimal(base_size = 12) +
+    theme(
+        plot.title = element_text(hjust = 0.5, size = 14),
+        legend.title = element_text(size = 8),
+        legend.text = element_text(size = 7)
+    )
+ggsave(filename = file.path(plot_path, "P1", "preds_inhib_lexTale_p1_so1_exp_plot.png"), preds_inhib_lexTale_p1_so1_exp_plot, width = 6, height = 6, dpi = 300)
+```
+```{r}
+# P1 SO1 Exploratory Model also has a significant effect of WordTypeP1 X LexTALE
+p1_so1_exp_preds_p1_lexTale <- as.data.frame(ggpredict(
+    p1_so1_exp_model,
+    terms = c("WordTypeP1", "LexTALE_z[all]"),
+    type = "fixed",
+    bias_correction = TRUE
+))
+
+p1_so1_exp_preds_p1_lexTale <- p1_so1_exp_preds_p1_lexTale %>%
+    rename(LexTALE = group)
+
+p1_so1_exp_preds_p1_lexTale$LexTALE <- as.numeric(as.character(p1_so1_exp_preds_p1_lexTale$LexTALE))
+p1_so1_exp_preds_p1_lexTale_plot <- ggplot(p1_so1_exp_preds_p1_lexTale, aes(x = LexTALE, y = predicted, color = x)) +
+    geom_line(size = 1) +
+    geom_ribbon(aes(ymin = conf.low, ymax = conf.high, fill = x), alpha = 0.2, color = NA) +
+    labs(
+        x = "LexTALE Score (Scaled)",
+        y = "Predicted Log Reading Time",
+        title = str_wrap("Predicted log reading times of P1 Word Types at P1 Spillover 1 based on LexTALE Score (Exploratory Model)", width = 60),
+        color = "P1 Word Types",
+        fill = "P1 Word Types"
+    ) +
+    theme_minimal(base_size = 12) +
+    theme(
+        plot.title = element_text(hjust = 0.5, size = 14),
+        legend.title = element_text(size = 8),
+        legend.text = element_text(size = 7)
+    )
+ggsave(filename = file.path(plot_path, "P1", "p1_so1_exp_preds_p1_lexTale_plot.png"), p1_so1_exp_preds_p1_lexTale_plot, width = 6, height = 6, dpi = 300)
+```
+```{r}
+# P1 Confirmatory Model has a significant effect of US English Log Frequency
+preds_freq_p1_so1_base <- as.data.frame(ggpredict(
+    p1_so1_base_model,
+    terms = c("LogFreqUS_z"),
+    type = "fixed",
+    bias_correction = TRUE
+))
+
+preds_freq_p1_so1_base$x <- as.numeric(as.character(preds_freq_p1_so1_base$x))
+preds_freq_p1_so1_base_plot <- ggplot(preds_freq_p1_so1_base, aes(x = x, y = predicted)) +
+    geom_line(aes(group = 1), size = 1) +
+    geom_ribbon(aes(ymin = conf.low, ymax = conf.high), alpha = 0.2, color = NA) +
+    labs(
+        x = "US English Log Frequency (Scaled)",
+        y = "Predicted Log Reading Time",
+        title = str_wrap("Predicted log reading times at Spillover 1 based on Scaled US English Log Frequency (Confirmatory Model)", width = 60),
+    ) +
+    theme_minimal(base_size = 12) +
+    theme(
+        plot.title = element_text(hjust = 0.5, size = 14),
+    )
+ggsave(filename = file.path(plot_path, "P1", "preds_freq_p1_so1_base_plot.png"), preds_freq_p1_so1_base_plot, width = 6, height = 6, dpi = 300)
+```
+```{r}
+# P1 Confirmatory Model has a significant effect of Word length
+preds_wordLength_p1_so1_base <- as.data.frame(ggpredict(
+    p1_so1_base_model,
+    terms = c("wordLengthP1_z"),
+    type = "fixed",
+    bias_correction = TRUE
+))
+
+preds_wordLength_p1_so1_base$x <- as.numeric(as.character(preds_wordLength_p1_so1_base$x))
+preds_wordLength_p1_so1_base_plot <- ggplot(preds_wordLength_p1_so1_base, aes(x = x, y = predicted)) +
+    geom_line(aes(group = 1), size = 1) +
+    geom_ribbon(aes(ymin = conf.low, ymax = conf.high), alpha = 0.2, color = NA) +
+    labs(
+        x = "Word Length (Scaled)",
+        y = "Predicted Log Reading Time",
+        title = str_wrap("Predicted log reading times at Spillover 1 based on Scaled Word Length (Confirmatory Model)", width = 60),
+    ) +
+    theme_minimal(base_size = 12) +
+    theme(
+        plot.title = element_text(hjust = 0.5, size = 14),
+    )
+ggsave(filename = file.path(plot_path, "P1", "preds_wordLength_p1_so1_base_plot.png"), preds_wordLength_p1_so1_base_plot, width = 6, height = 6, dpi = 300)
+```
+```{r}
+# P1 Exploratory Model has a significant effect of US English Log Frequency
+preds_freq_p1_so1_exp <- as.data.frame(ggpredict(
+    p1_so1_exp_model,
+    terms = c("LogFreqUS_z"),
+    type = "fixed",
+    bias_correction = TRUE
+))
+
+preds_freq_p1_so1_exp$x <- as.numeric(as.character(preds_freq_p1_so1_exp$x))
+preds_freq_p1_so1_exp_plot <- ggplot(preds_freq_p1_so1_exp, aes(x = x, y = predicted)) +
+    geom_line(aes(group = 1), size = 1) +
+    geom_ribbon(aes(ymin = conf.low, ymax = conf.high), alpha = 0.2, color = NA) +
+    labs(
+        x = "US English Log Frequency (Scaled)",
+        y = "Predicted Log Reading Time",
+        title = str_wrap("Predicted log reading times at P1 Spillover 1 based on Scaled US English Log Frequency (Exploratory Model)", width = 60),
+    ) +
+    theme_minimal(base_size = 12) +
+    theme(
+        plot.title = element_text(hjust = 0.5, size = 14),
+    )
+ggsave(filename = file.path(plot_path, "P1", "preds_freq_p1_so1_exp_plot.png"), preds_freq_p1_so1_exp_plot, width = 6, height = 6, dpi = 300)
+```
+```{r}
+# P1 Exploratory Model has a significant effect of Word length
+preds_wordLength_p1_so1_exp <- as.data.frame(ggpredict(
+    p1_so1_exp_model,
+    terms = c("wordLengthP1_z"),
+    type = "fixed",
+    bias_correction = TRUE
+))
+
+preds_wordLength_p1_so1_exp$x <- as.numeric(as.character(preds_wordLength_p1_so1_exp$x))
+preds_wordLength_p1_so1_exp_plot <- ggplot(preds_wordLength_p1_so1_exp, aes(x = x, y = predicted)) +
+    geom_line(aes(group = 1), size = 1) +
+    geom_ribbon(aes(ymin = conf.low, ymax = conf.high), alpha = 0.2, color = NA) +
+    labs(
+        x = "Word Length (Scaled)",
+        y = "Predicted Log Reading Time",
+        title = str_wrap("Predicted log reading times at P1 Spillover 1 based on Scaled Word Length (Exploratory Model)", width = 60),
+    ) +
+    theme_minimal(base_size = 12) +
+    theme(
+        plot.title = element_text(hjust = 0.5, size = 14),
+    )
+ggsave(filename = file.path(plot_path, "P1", "preds_wordLength_p1_so1_exp_plot.png"), preds_wordLength_p1_so1_exp_plot, width = 6, height = 6, dpi = 300)
+```
+```{r}
+# P1 SO1 has a significant interaction effect of LexTALE and English Frequency for Exploratory Model
+preds_freq_lexTale_p1_so1_exp <- as.data.frame(ggpredict(
+    p1_so1_exp_model,
+    terms = c("LogFreqUS_z", "LexTALE_z[0.33, 0.5, 0.66]"),
+    type = "fixed",
+    bias_correction = TRUE
+))
+
+preds_freq_lexTale_p1_so1_exp <- preds_freq_lexTale_p1_so1_exp %>%
+    rename(LexTALE = group, freq_score = x) %>%
+    mutate(
+        LexTALE_Binned = case_when(
+            LexTALE == "0.33" ~ "Low LexTALE",
+            LexTALE == "0.5" ~ "Medium LexTALE",
+            LexTALE == "0.66" ~ "High LexTALE"
+        )
+    )
+
+preds_freq_lexTale_p1_so1_exp$freq_score <- as.numeric(as.character(preds_freq_lexTale_p1_so1_exp$freq_score))
+preds_freq_lexTale_p1_so1_exp_plot <- ggplot(preds_freq_lexTale_p1_so1_exp, aes(x = freq_score, y = predicted, color = LexTALE_Binned)) +
+    geom_line(size = 1) +
+    geom_ribbon(aes(ymin = conf.low, ymax = conf.high, fill = LexTALE_Binned), alpha = 0.2, color = NA) +
+    labs(
+        x = "US English Log Frequency (Scaled)",
+        y = "Predicted Log Reading Time",
+        title = str_wrap("Predicted log reading times at P1 Spillover 1 by US English Log Frequency and LexTALE proficiency (Exploratory Model)", width = 60),
+        color = "Binned LexTALE Score",
+        fill = "Binned LexTALE Score"
+    ) +
+    theme_minimal(base_size = 12) +
+    theme(
+        plot.title = element_text(hjust = 0.5, size = 14),
+        legend.title = element_text(size = 8),
+        legend.text = element_text(size = 7)
+    )
+ggsave(filename = file.path(plot_path, "P1", "preds_freq_lexTale_p1_so1_exp_plot.png"), preds_freq_lexTale_p1_so1_exp_plot, width = 6, height = 6, dpi = 300)
+```
+```{r}
+# ============================================================
+# 1c. Spillover 2 Plots
+# ============================================================
+```
+```{r}
+# P1 Confirmatory Model looking at the main effects of WordTypeP1
+preds_P1_so2_base <- as.data.frame(ggpredict(p1_so2_base_model, terms = "WordTypeP1", type = "fixed", bias_correction = TRUE))
+
+preds_P1_so2_base_plot <- ggplot(preds_P1_so2_base, aes(x = x, y = predicted)) +
+    geom_line(aes(group = 1), size = 1) +
+    geom_errorbar(aes(ymin = conf.low, ymax = conf.high), width = 0.2) +
+    labs(
+        x = "P1 Word Types",
+        y = "Predicted Log Reading Time",
+        title = str_wrap("Predicted log reading times at P2 Spillover 2 for P1 Word Types (Confirmatory Model)", width = 60),
+    ) +
+    theme_minimal(base_size = 12) +
+    theme(
+        plot.title = element_text(hjust = 0.5, size = 14),
+        legend.title = element_text(size = 8),
+        legend.text = element_text(size = 8)
+    )
+ggsave(filename = file.path(plot_path, "P1", "preds_P1_so2_base_plot.png"), preds_P1_so2_base_plot, width = 6, height = 6, dpi = 300)
+```
+```{r}
+# P1 confirmatory Model interaction effects of WordTypeP1 and inhibition_control_score
+preds_P1_inhib_p1_so2_base <- as.data.frame(ggpredict(p1_so2_base_model, terms = c("WordTypeP1", "inhibition_control_score [all]"), type = "fixed", bias_correction = TRUE))
+preds_P1_inhib_p1_so2_base <- preds_P1_inhib_p1_so2_base %>%
+    rename(inhib_score = group)
+
+preds_P1_inhib_p1_so2_base$inhib_score <- as.numeric(as.character(preds_P1_inhib_p1_so2_base$inhib_score))
+preds_P1_inhib_p1_so2_base_plot <- ggplot(preds_P1_inhib_p1_so2_base, aes(x = inhib_score, y = predicted, color = x)) +
+    geom_line(size = 1) +
+    geom_ribbon(aes(ymin = conf.low, ymax = conf.high, fill = x), alpha = 0.2, color = NA) +
+    labs(
+        x = "Inhibition Control Score(Scaled)",
+        y = "Predicted Log Reading Time",
+        title = str_wrap("Predicted log reading times of P1 Word Types at P2 Spillover 2 based on Inhibition Control Score (Confirmatory Model)", width = 60),
+        color = "P1 Word Types",
+        fill = "P1 Word Types"
+    ) +
+    theme_minimal(base_size = 12) +
+    theme(
+        plot.title = element_text(hjust = 0.5, size = 14),
+        legend.title = element_text(size = 8),
+        legend.text = element_text(size = 8)
+    )
+ggsave(filename = file.path(plot_path, "P1", "preds_P1_inhib_p1_so2_base_plot.png"), preds_P1_inhib_p1_so2_base_plot, width = 6, height = 6, dpi = 300)
+```
+
+```{r}
+# P1 Exploratory Model looking at the main effects of WordTypeP1
+preds_P1_so2_base <- as.data.frame(ggpredict(p1_so2_exp_model, terms = "WordTypeP1", type = "fixed", bias_correction = TRUE))
+
+preds_P1_so2_exp_plot <- ggplot(preds_P1_so2_base, aes(x = x, y = predicted)) +
+    geom_line(aes(group = 1), size = 1) +
+    geom_errorbar(aes(ymin = conf.low, ymax = conf.high), width = 0.2) +
+    labs(
+        x = "P1 Word Types",
+        y = "Predicted Log Reading Time",
+        title = str_wrap("Predicted log reading times at P2 Spillover 2 for P1 Word Types (Exploratory Model)", width = 60),
+    ) +
+    theme_minimal(base_size = 12) +
+    theme(
+        plot.title = element_text(hjust = 0.5, size = 14),
+        legend.title = element_text(size = 8),
+        legend.text = element_text(size = 8)
+    )
+ggsave(filename = file.path(plot_path, "P1", "preds_P1_so2_exp_plot.png"), preds_P1_so2_exp_plot, width = 6, height = 6, dpi = 300)
+```
+```{r}
+# P1 exploratory Model interaction effects of WordTypeP1 and inhibition_control_score
+preds_P1_inhib_p1_so2_base <- as.data.frame(ggpredict(p1_so2_exp_model, terms = c("WordTypeP1", "inhibition_control_score [all]"), type = "fixed", bias_correction = TRUE))
+preds_P1_inhib_p1_so2_base <- preds_P1_inhib_p1_so2_base %>%
+    rename(inhib_score = group)
+
+preds_P1_inhib_p1_so2_base$inhib_score <- as.numeric(as.character(preds_P1_inhib_p1_so2_base$inhib_score))
+preds_P1_inhib_p1_so2_exp_plot <- ggplot(preds_P1_inhib_p1_so2_base, aes(x = inhib_score, y = predicted, color = x)) +
+    geom_line(size = 1) +
+    geom_ribbon(aes(ymin = conf.low, ymax = conf.high, fill = x), alpha = 0.2, color = NA) +
+    labs(
+        x = "Inhibition Control Score(Scaled)",
+        y = "Predicted Log Reading Time",
+        title = str_wrap("Predicted log reading times of P1 Word Types at P2 Spillover 2 based on Inhibition Control Score (Exploratory Model)", width = 60),
+        color = "P1 Word Types",
+        fill = "P1 Word Types"
+    ) +
+    theme_minimal(base_size = 12) +
+    theme(
+        plot.title = element_text(hjust = 0.5, size = 14),
+        legend.title = element_text(size = 8),
+        legend.text = element_text(size = 8)
+    )
+ggsave(filename = file.path(plot_path, "P1", "preds_P1_inhib_p1_so2_exp_plot.png"), preds_P1_inhib_p1_so2_exp_plot, width = 6, height = 6, dpi = 300)
+```
+
+```{r}
+# ============================================================
+# 2. Position P2
+# ============================================================
+# Plot reference: https://stackoverflow.com/questions/72233294/r-data-visualization-is-there-a-way-to-plot-based-on-emmeans-using-ggplot
+```
+```{r}
+# ============================================================
+# 2a. ROI Plots
+# ============================================================
+```
+```{r}
+# P1 X P2 Interactions from ROI Confirmatory Model
+P2_P1_roi_base_emmeans <- as.data.frame(emmeans(p2_roi_base_model, ~ WordTypeP2 * WordTypeP1))
+
+P2_P1_roi_base_emmeans_plot <- ggplot(P2_P1_roi_base_emmeans, aes(x = WordTypeP2, y = emmean, group = WordTypeP1, color = WordTypeP1)) +
+    geom_line(size = 2) +
+    geom_point(size = 1) +
+    geom_errorbar(aes(ymin = lower.CL, ymax = upper.CL), width = 0.15, alpha = 0.8) +
+    labs(
+        x = "P2 Word Types",
+        y = "Predicted Log Redaing Time",
+        title = str_wrap("Reading times of P2 Word Types at P2 ROI (Confirmatory Model)", width = 60),
+        color = "P1 Word Types"
+    ) +
+    theme_minimal(base_size = 12) +
+    theme(
+        plot.title = element_text(hjust = 0.5, size = 14),
+        legend.title = element_text(size = 8),
+        legend.text = element_text(size = 8)
+    )
+ggsave(filename = file.path(plot_path, "P2", "P2_P1_roi_base_emmeans_plot.png"), P2_P1_roi_base_emmeans_plot, width = 6, height = 6, dpi = 300)
+```
+```{r}
+# P1 X P2 X Inhibition from ROI Confirmatory Model
+p1_p2_inhib_preds_roi_base <- as.data.frame(ggpredict(
+    p2_roi_base_model,
+    terms = c("inhibition_control_score [all]", "WordTypeP2", "WordTypeP1"),
+    bias_correction = TRUE
+))
+
+p1_p2_inhib_preds_roi_base <- p1_p2_inhib_preds_roi_base %>%
+    rename(inhib_score = x, WordTypeP2 = group, WordTypeP1 = facet)
+
+p1_p2_inhib_preds_roi_base$inhib_score <- as.numeric(as.character(p1_p2_inhib_preds_roi_base$inhib_score))
+
+p1_p2_inhib_preds_roi_base_plot <- ggplot(p1_p2_inhib_preds_roi_base, aes(x = inhib_score, y = predicted, color = WordTypeP2)) +
+    geom_line(size = 1) +
+    geom_ribbon(aes(ymin = conf.low, ymax = conf.high, fill = WordTypeP2), alpha = 0.2, color = NA) +
+    facet_wrap(~WordTypeP1) +
+    labs(
+        x = "Inhibition Control Score (Scaled)",
+        y = "Predicted Log Reading Time",
+        title = str_wrap("Reading time at Position P2 ROI as a function of P1 Word Types and P2 and Inhibition Control Score (Confirmatory Model)", width = 60),
+        color = "P1 Word Types",
+        fill = "P1 Word Types"
+    ) +
+    theme_minimal(base_size = 12) +
+    theme(
+        plot.title = element_text(hjust = 0.5, size = 14),
+        legend.title = element_text(size = 8),
+        legend.text = element_text(size = 8)
+    )
+ggsave(filename = file.path(plot_path, "P2", "p1_p2_inhib_preds_roi_base_plot.png"), p1_p2_inhib_preds_roi_base_plot, width = 8, height = 6, dpi = 300)
+```
+```{r}
+# P1 X P2 Interactions from ROI Exploratory Model
+P2_P1_roi_exp_emmeans <- as.data.frame(emmeans(p2_roi_exp_model, ~ WordTypeP2 * WordTypeP1))
+
+P2_P1_roi_exp_emmeans_plot <- ggplot(P2_P1_roi_exp_emmeans, aes(x = WordTypeP2, y = emmean, group = WordTypeP1, color = WordTypeP1)) +
+    geom_line(size = 2) +
+    geom_point(size = 1) +
+    geom_errorbar(aes(ymin = lower.CL, ymax = upper.CL), width = 0.15, alpha = 0.8) +
+    labs(
+        x = "P2 Word Types",
+        y = "Predicted Log Redaing Time",
+        title = str_wrap("Reading times of P2 Word Types at P2 ROI (Exploratory Model)", width = 60),
+        color = "P1 Word Types"
+    ) +
+    theme_minimal(base_size = 12) +
+    theme(
+        plot.title = element_text(hjust = 0.5, size = 14),
+        legend.title = element_text(size = 8),
+        legend.text = element_text(size = 8)
+    )
+ggsave(filename = file.path(plot_path, "P2", "P2_P1_roi_exp_emmeans_plot.png"), P2_P1_roi_exp_emmeans_plot, width = 6, height = 6, dpi = 300)
+```
+```{r}
+# P1 X P2 X Inhibition from ROI Exploratory model
+p1_p2_inhib_preds_roi_exp <- as.data.frame(ggpredict(
+    p2_roi_exp_model,
+    terms = c("inhibition_control_score [all]", "WordTypeP2", "WordTypeP1"),
+    bias_correction = TRUE
+))
+
+p1_p2_inhib_preds_roi_exp <- p1_p2_inhib_preds_roi_exp %>%
+    rename(inhib_score = x, WordTypeP2 = group, WordTypeP1 = facet)
+
+p1_p2_inhib_preds_roi_exp$inhib_score <- as.numeric(as.character(p1_p2_inhib_preds_roi_exp$inhib_score))
+
+p1_p2_inhib_preds_roi_exp_plot <- ggplot(p1_p2_inhib_preds_roi_exp, aes(x = inhib_score, y = predicted, color = WordTypeP2)) +
+    geom_line(size = 1) +
+    geom_ribbon(aes(ymin = conf.low, ymax = conf.high, fill = WordTypeP2), alpha = 0.2, color = NA) +
+    facet_wrap(~WordTypeP1) +
+    labs(
+        x = "Inhibition Control Score (Scaled)",
+        y = "Predicted Log Reading Time",
+        title = str_wrap("Reading time at Position P2 ROI as a function of P1 Word Types and P2 and Inhibition Control Score (Exploratory Model)", width = 60),
+        color = "P1 Word Types",
+        fill = "P1 Word Types"
+    ) +
+    theme_minimal(base_size = 12) +
+    theme(
+        plot.title = element_text(hjust = 0.5, size = 14),
+        legend.title = element_text(size = 8),
+        legend.text = element_text(size = 8)
+    )
+ggsave(filename = file.path(plot_path, "P2", "p1_p2_inhib_preds_roi_exp_plot.png"), p1_p2_inhib_preds_roi_exp_plot, width = 8, height = 6, dpi = 300)
+```
+```{r}
+# P1 Confirmatory Model has a significant effect of Word length
+preds_wordLength_p2_roi_base <- as.data.frame(ggpredict(
+    p2_roi_base_model,
+    terms = c("wordLengthP2_z"),
+    type = "fixed",
+    bias_correction = TRUE
+))
+
+preds_wordLength_p2_roi_base$x <- as.numeric(as.character(preds_wordLength_p2_roi_base$x))
+preds_wordLength_p2_roi_base_plot <- ggplot(preds_wordLength_p2_roi_base, aes(x = x, y = predicted)) +
+    geom_line(aes(group = 1), size = 1) +
+    geom_ribbon(aes(ymin = conf.low, ymax = conf.high), alpha = 0.2, color = NA) +
+    labs(
+        x = "Word Length (Scaled)",
+        y = "Predicted Log Reading Time",
+        title = str_wrap("Predicted log reading times at P2 ROI based on Scaled Word Length (Confirmatory Model)", width = 60),
+    ) +
+    theme_minimal(base_size = 12) +
+    theme(
+        plot.title = element_text(hjust = 0.5, size = 14),
+    )
+ggsave(filename = file.path(plot_path, "P1", "preds_wordLength_p2_roi_base_plot.png"), preds_wordLength_p2_roi_base_plot, width = 6, height = 6, dpi = 300)
+```
+```{r}
+# ============================================================
+# 2b. Spillover 1 Plots
+# ============================================================
+```
+
+```{r}
+# P1 X P2 Interactions
+P2_P1_so1_base_emmeans <- as.data.frame(emmeans(p2_so1_base_model, ~ WordTypeP2 * WordTypeP1))
+
+P2_P1_so1_base_emmeans_plot <- ggplot(P2_P1_so1_base_emmeans, aes(x = WordTypeP2, y = emmean, group = WordTypeP1, color = WordTypeP1)) +
+    geom_line(size = 2) +
+    geom_point(size = 1) +
+    geom_errorbar(aes(ymin = lower.CL, ymax = upper.CL), width = 0.15, alpha = 0.8) +
+    labs(
+        x = "P2 Word Types",
+        y = "Predicted Log Redaing Time",
+        title = str_wrap("Reading times of P2 Word Types at P2 Spillover 1 (Confirmatory Model)", width = 60),
+        color = "P1 Word Types"
+    ) +
+    theme_minimal(base_size = 12) +
+    theme(
+        plot.title = element_text(hjust = 0.5, size = 14),
+        legend.title = element_text(size = 8),
+        legend.text = element_text(size = 8)
+    )
+ggsave(filename = file.path(plot_path, "P2", "P2_P1_so1_base_emmeans_plot.png"), P2_P1_so1_base_emmeans_plot, width = 6, height = 6, dpi = 300)
+```
+```{r}
+# P1 X P2 Interactions
+P2_P1_so1_exp_emmeans <- as.data.frame(emmeans(p2_so1_exp_model, ~ WordTypeP2 * WordTypeP1))
+
+P2_P1_so1_exp_emmeans_plot <- ggplot(P2_P1_so1_exp_emmeans, aes(x = WordTypeP2, y = emmean, group = WordTypeP1, color = WordTypeP1)) +
+    geom_line(size = 2) +
+    geom_point(size = 1) +
+    geom_errorbar(aes(ymin = lower.CL, ymax = upper.CL), width = 0.15, alpha = 0.8) +
+    labs(
+        x = "P2 Word Types",
+        y = "Predicted Log Redaing Time",
+        title = str_wrap("Reading times of P2 Word Types at P2 Spillover 1 (Exploratory Model)", width = 60),
+        color = "P1 Word Types"
+    ) +
+    theme_minimal(base_size = 12) +
+    theme(
+        plot.title = element_text(hjust = 0.5, size = 14),
+        legend.title = element_text(size = 8),
+        legend.text = element_text(size = 8)
+    )
+ggsave(filename = file.path(plot_path, "P2", "P2_P1_so1_exp_emmeans_plot.png"), P2_P1_so1_exp_emmeans_plot, width = 6, height = 6, dpi = 300)
+```
+```{r}
+# P1 X P2 X Inhibition from Confirmatory Model
+p1_p2_inhib_preds_so1_base <- as.data.frame(ggpredict(
+    p2_so1_base_model,
+    terms = c("inhibition_control_score [all]", "WordTypeP2", "WordTypeP1"),
+    bias_correction = TRUE
+))
+
+p1_p2_inhib_preds_so1_base <- p1_p2_inhib_preds_so1_base %>%
+    rename(inhib_score = x, WordTypeP2 = group, WordTypeP1 = facet)
+
+p1_p2_inhib_preds_so1_base$inhib_score <- as.numeric(as.character(p1_p2_inhib_preds_so1_base$inhib_score))
+
+p1_p2_inhib_preds_so1_base_plot <- ggplot(p1_p2_inhib_preds_so1_base, aes(x = inhib_score, y = predicted, color = WordTypeP2)) +
+    geom_line(size = 1) +
+    geom_ribbon(aes(ymin = conf.low, ymax = conf.high, fill = WordTypeP2), alpha = 0.2, color = NA) +
+    facet_wrap(~WordTypeP1) +
+    labs(
+        x = "Inhibition Control Score (Scaled)",
+        y = "Predicted Log Reading Time",
+        title = str_wrap("Reading time at Position P2 Spillover 1 as a function of P1 Word Types and P2 and Inhibition Control Score (Confirmatory Model)", width = 60),
+        color = "P1 Word Types",
+        fill = "P1 Word Types"
+    ) +
+    theme_minimal(base_size = 12) +
+    theme(
+        plot.title = element_text(hjust = 0.5, size = 14),
+        legend.title = element_text(size = 8),
+        legend.text = element_text(size = 8)
+    )
+ggsave(filename = file.path(plot_path, "P2", "p1_p2_inhib_preds_so1_base_plot.png"), p1_p2_inhib_preds_so1_base_plot, width = 8, height = 6, dpi = 300)
+```
+```{r}
+# P1 X P2 X Inhibition from Exploratory Model
+p1_p2_inhib_preds_so1_exp <- as.data.frame(ggpredict(
+    p2_so1_exp_model,
+    terms = c("inhibition_control_score [all]", "WordTypeP2", "WordTypeP1"),
+    bias_correction = TRUE
+))
+
+p1_p2_inhib_preds_so1_exp <- p1_p2_inhib_preds_so1_exp %>%
+    rename(inhib_score = x, WordTypeP2 = group, WordTypeP1 = facet)
+
+p1_p2_inhib_preds_so1_exp$inhib_score <- as.numeric(as.character(p1_p2_inhib_preds_so1_exp$inhib_score))
+
+p1_p2_inhib_preds_so1_exp_plot <- ggplot(p1_p2_inhib_preds_so1_exp, aes(x = inhib_score, y = predicted, color = WordTypeP2)) +
+    geom_line(size = 1) +
+    geom_ribbon(aes(ymin = conf.low, ymax = conf.high, fill = WordTypeP2), alpha = 0.2, color = NA) +
+    facet_wrap(~WordTypeP1) +
+    labs(
+        x = "Inhibition Control Score (Scaled)",
+        y = "Predicted Log Reading Time",
+        title = str_wrap("Reading time at Position P2 Spillover 1 as a function of P1 Word Types and P2 and Inhibition Control Score (Exploratory Model)", width = 60),
+        color = "P1 Word Types",
+        fill = "P1 Word Types"
+    ) +
+    theme_minimal(base_size = 12) +
+    theme(
+        plot.title = element_text(hjust = 0.5, size = 14),
+        legend.title = element_text(size = 8),
+        legend.text = element_text(size = 8)
+    )
+ggsave(filename = file.path(plot_path, "P2", "p1_p2_inhib_preds_so1_exp_plot.png"), p1_p2_inhib_preds_so1_exp_plot, width = 8, height = 6, dpi = 300)
+```
+```{r}
+# P1 Exploratory Model has a significant effect of US English Log Frequency
+preds_freq_p2_so1_exp <- as.data.frame(ggpredict(
+    p2_so1_exp_model,
+    terms = c("LogFreqP2_SO1_z"),
+    type = "fixed",
+    bias_correction = TRUE
+))
+
+preds_freq_p2_so1_exp$x <- as.numeric(as.character(preds_freq_p2_so1_exp$x))
+preds_freq_p2_so1_exp_plot <- ggplot(preds_freq_p2_so1_exp, aes(x = x, y = predicted)) +
+    geom_line(aes(group = 1), size = 1) +
+    geom_ribbon(aes(ymin = conf.low, ymax = conf.high), alpha = 0.2, color = NA) +
+    labs(
+        x = "US English Log Frequency (Scaled)",
+        y = "Predicted Log Reading Time",
+        title = str_wrap("Predicted log reading times at P2 Spillover 1 based on Scaled US English Log Frequency (Exploratory Model)", width = 60),
+    ) +
+    theme_minimal(base_size = 12) +
+    theme(
+        plot.title = element_text(hjust = 0.5, size = 14),
+    )
+ggsave(filename = file.path(plot_path, "P1", "preds_freq_p2_so1_exp_plot.png"), preds_freq_p2_so1_exp_plot, width = 6, height = 6, dpi = 300)
+```
+```{r}
+# P1 Confirmatory Model has a significant effect of US English Log Frequency
+preds_freq_p2_so1_base <- as.data.frame(ggpredict(
+    p2_so1_base_model,
+    terms = c("LogFreqP2_SO1_z"),
+    type = "fixed",
+    bias_correction = TRUE
+))
+
+preds_freq_p2_so1_base$x <- as.numeric(as.character(preds_freq_p2_so1_base$x))
+preds_freq_p2_so1_base_plot <- ggplot(preds_freq_p2_so1_base, aes(x = x, y = predicted)) +
+    geom_line(aes(group = 1), size = 1) +
+    geom_ribbon(aes(ymin = conf.low, ymax = conf.high), alpha = 0.2, color = NA) +
+    labs(
+        x = "US English Log Frequency (Scaled)",
+        y = "Predicted Log Reading Time",
+        title = str_wrap("Predicted log reading times at P2 Spillover 1 based on Scaled US English Log Frequency (Confirmatory Model)", width = 60),
+    ) +
+    theme_minimal(base_size = 12) +
+    theme(
+        plot.title = element_text(hjust = 0.5, size = 14),
+    )
+ggsave(filename = file.path(plot_path, "P1", "preds_freq_p2_so1_base_plot.png"), preds_freq_p2_so1_base_plot, width = 6, height = 6, dpi = 300)
+```
+```{r}
+# ============================================================
+# 2c. Spillover 2 Plots
+# ============================================================
+```
+```{r}
+# P1 X P2 Interactions from Confirmatory Model
+P2_P1_so2_base_emmeans <- as.data.frame(emmeans(p2_so2_base_model, ~ WordTypeP2 * WordTypeP1))
+
+P2_P1_so2_base_emmeans_plot <- ggplot(P2_P1_so2_base_emmeans, aes(x = WordTypeP2, y = emmean, group = WordTypeP1, color = WordTypeP1)) +
+    geom_line(size = 2) +
+    geom_point(size = 1) +
+    geom_errorbar(aes(ymin = lower.CL, ymax = upper.CL), width = 0.15, alpha = 0.8) +
+    labs(
+        x = "P2 Word Types",
+        y = "Predicted Log Redaing Time",
+        title = str_wrap("Reading times of P2 Word Types at P2 Spillover 2 (Confirmatory Model)", width = 60),
+        color = "P1 Word Types"
+    ) +
+    theme_minimal(base_size = 12) +
+    theme(
+        plot.title = element_text(hjust = 0.5, size = 14),
+        legend.title = element_text(size = 8),
+        legend.text = element_text(size = 8)
+    )
+ggsave(filename = file.path(plot_path, "P2", "P2_P1_so2_base_emmeans_plot.png"), P2_P1_so2_base_emmeans_plot, width = 6, height = 6, dpi = 300)
+```
+```{r}
+# P1 X P2 Interactions from Exploratory Model
+P2_P1_so2_exp_emmeans <- as.data.frame(emmeans(p2_so2_exp_model, ~ WordTypeP2 * WordTypeP1))
+
+P2_P1_so2_exp_emmeans_plot <- ggplot(P2_P1_so2_exp_emmeans, aes(x = WordTypeP2, y = emmean, group = WordTypeP1, color = WordTypeP1)) +
+    geom_line(size = 2) +
+    geom_point(size = 1) +
+    geom_errorbar(aes(ymin = lower.CL, ymax = upper.CL), width = 0.15, alpha = 0.8) +
+    labs(
+        x = "P2 Word Types",
+        y = "Predicted Log Redaing Time",
+        title = str_wrap("Reading times of P2 Word Types at P2 Spillover 2 (Exploratory Model)", width = 60),
+        color = "P1 Word Types"
+    ) +
+    theme_minimal(base_size = 12) +
+    theme(
+        plot.title = element_text(hjust = 0.5, size = 14),
+        legend.title = element_text(size = 8),
+        legend.text = element_text(size = 8)
+    )
+ggsave(filename = file.path(plot_path, "P2", "P2_P1_so2_exp_emmeans_plot.png"), P2_P1_so2_exp_emmeans_plot, width = 6, height = 6, dpi = 300)
+```
+```{r}
+# P1 X P2 X Inhibition from Confirmatory Model
+p1_p2_inhib_preds_so2_base <- as.data.frame(ggpredict(
+    p2_so2_base_model,
+    terms = c("inhibition_control_score [all]", "WordTypeP2", "WordTypeP1"),
+    bias_correction = TRUE
+))
+
+p1_p2_inhib_preds_so2_base <- p1_p2_inhib_preds_so2_base %>%
+    rename(inhib_score = x, WordTypeP2 = group, WordTypeP1 = facet)
+
+p1_p2_inhib_preds_so2_base$inhib_score <- as.numeric(as.character(p1_p2_inhib_preds_so2_base$inhib_score))
+
+p1_p2_inhib_preds_so2_base_plot <- ggplot(p1_p2_inhib_preds_so2_base, aes(x = inhib_score, y = predicted, color = WordTypeP2)) +
+    geom_line(size = 1) +
+    geom_ribbon(aes(ymin = conf.low, ymax = conf.high, fill = WordTypeP2), alpha = 0.2, color = NA) +
+    facet_wrap(~WordTypeP1) +
+    labs(
+        x = "Inhibition Control Score (Scaled)",
+        y = "Predicted Log Reading Time",
+        title = str_wrap("Reading time at Position P2 Spillover 2 as a function of P1 Word Types and P2 and Inhibition Control Score (Confirmatory Model)", width = 60),
+        color = "P1 Word Types",
+        fill = "P1 Word Types"
+    ) +
+    theme_minimal(base_size = 12) +
+    theme(
+        plot.title = element_text(hjust = 0.5, size = 14),
+        legend.title = element_text(size = 8),
+        legend.text = element_text(size = 8)
+    )
+ggsave(filename = file.path(plot_path, "P2", "p1_p2_inhib_preds_so2_base_plot.png"), p1_p2_inhib_preds_so2_base_plot, width = 8, height = 6, dpi = 300)
+```
+```{r}
+# P1 X P2 X Inhibition from Exploratory Model
+p1_p2_inhib_preds_so2_exp <- as.data.frame(ggpredict(
+    p2_so2_exp_model,
+    terms = c("inhibition_control_score [all]", "WordTypeP2", "WordTypeP1"),
+    bias_correction = TRUE
+))
+
+p1_p2_inhib_preds_so2_exp <- p1_p2_inhib_preds_so2_exp %>%
+    rename(inhib_score = x, WordTypeP2 = group, WordTypeP1 = facet)
+
+p1_p2_inhib_preds_so2_exp$inhib_score <- as.numeric(as.character(p1_p2_inhib_preds_so2_exp$inhib_score))
+
+p1_p2_inhib_preds_so2_exp_plot <- ggplot(p1_p2_inhib_preds_so2_exp, aes(x = inhib_score, y = predicted, color = WordTypeP2)) +
+    geom_line(size = 1) +
+    geom_ribbon(aes(ymin = conf.low, ymax = conf.high, fill = WordTypeP2), alpha = 0.2, color = NA) +
+    facet_wrap(~WordTypeP1) +
+    labs(
+        x = "Inhibition Control Score (Scaled)",
+        y = "Predicted Log Reading Time",
+        title = str_wrap("Reading time at Position P2 Spillover 2 as a function of P1 Word Types and P2 and Inhibition Control Score (Exploratory Model)", width = 60),
+        color = "P1 Word Types",
+        fill = "P1 Word Types"
+    ) +
+    theme_minimal(base_size = 12) +
+    theme(
+        plot.title = element_text(hjust = 0.5, size = 14),
+        legend.title = element_text(size = 8),
+        legend.text = element_text(size = 8)
+    )
+ggsave(filename = file.path(plot_path, "P2", "p1_p2_inhib_preds_so2_exp_plot.png"), p1_p2_inhib_preds_so2_exp_plot, width = 8, height = 6, dpi = 300)
+```
+```{r}
+# There was a significant interaction effect of P2 X Inhibition control score based on Confirmatory Model
+preds_p2_inhib_p2_so2_base <- as.data.frame(ggpredict(
+    p2_so2_base_model,
+    terms = c("WordTypeP2", "inhibition_control_score [all]"),
+    type = "fixed",
+    bias_correction = TRUE
+))
+preds_p2_inhib_p2_so2_base <- preds_p2_inhib_p2_so2_base %>%
+    rename(inhib_score = group, P2 = x)
+preds_p2_inhib_p2_so2_base$inhib_score <- as.numeric(as.character(preds_p2_inhib_p2_so2_base$inhib_score))
+
+preds_p2_inhib_p2_so2_base_plot <- ggplot(preds_p2_inhib_p2_so2_base, aes(x = inhib_score, y = predicted, color = P2)) +
+    geom_line(size = 1) +
+    geom_ribbon(aes(ymin = conf.low, ymax = conf.high, fill = P2), alpha = 0.2, color = NA) +
+    labs(
+        x = "Inhibition Control Score (Scaled)",
+        y = "Predicted Log Reading Time",
+        title = str_wrap("Predicted log reading times for P2 Word Types at Spillover 2 based on Inhibition Control Score (Confirmatory Model)", width = 60),
+    ) +
+    theme_minimal(base_size = 12) +
+    theme(
+        plot.title = element_text(hjust = 0.5, size = 14)
+    )
+ggsave(filename = file.path(plot_path, "P2", "preds_p2_inhib_p2_so2_base_plot.png"), preds_p2_inhib_p2_so2_base_plot, width = 6, height = 6, dpi = 300)
+```
+```{r}
+# There was a significant interaction effect of P2 X Inhibition control score based on Exploratory Model
+preds_p2_inhib_p2_so2_exp <- as.data.frame(ggpredict(
+    p2_so2_exp_model,
+    terms = c("WordTypeP2", "inhibition_control_score [all]"),
+    type = "fixed",
+    bias_correction = TRUE
+))
+preds_p2_inhib_p2_so2_exp <- preds_p2_inhib_p2_so2_exp %>%
+    rename(inhib_score = group, P2 = x)
+preds_p2_inhib_p2_so2_exp$inhib_score <- as.numeric(as.character(preds_p2_inhib_p2_so2_exp$inhib_score))
+
+preds_p2_inhib_p2_so2_exp_plot <- ggplot(preds_p2_inhib_p2_so2_exp, aes(x = inhib_score, y = predicted, color = P2)) +
+    geom_line(size = 1) +
+    geom_ribbon(aes(ymin = conf.low, ymax = conf.high, fill = P2), alpha = 0.2, color = NA) +
+    labs(
+        x = "Inhibition Control Score (Scaled)",
+        y = "Predicted Log Reading Time",
+        title = str_wrap("Predicted log reading times for P2 Word Types at Spillover 2 based on Inhibition Control Score (Exploratory Model)", width = 60),
+    ) +
+    theme_minimal(base_size = 12) +
+    theme(
+        plot.title = element_text(hjust = 0.5, size = 14)
+    )
+ggsave(filename = file.path(plot_path, "P2", "preds_p2_inhib_p2_so2_exp_plot.png"), preds_p2_inhib_p2_so2_exp_plot, width = 6, height = 6, dpi = 300)
+```
