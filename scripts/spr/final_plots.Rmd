@@ -241,7 +241,7 @@ preds_P1_so1_base_plot <- ggplot(preds_P1_so1_base, aes(x = x, y = predicted)) +
     labs(
         x = "P1 Word Types",
         y = "Predicted Log Reading Time",
-        title = str_wrap("Predicted log reading times at ROI for P1 Word Types (Confirmatory Model)", width = 60),
+        title = str_wrap("Predicted log reading times at Spillover 1 for P1 Word Types (Confirmatory Model)", width = 60),
     ) +
     theme_minimal(base_size = 12) +
     theme(
@@ -249,7 +249,7 @@ preds_P1_so1_base_plot <- ggplot(preds_P1_so1_base, aes(x = x, y = predicted)) +
         legend.title = element_text(size = 10),
         legend.text = element_text(size = 10)
     )
-ggsave(filename = file.path(plot_path, "P1", "preds_P1_so1_base_plot.png"), preds_P1_so1_base_plot, width = 6, height = 6, dpi = 300)
+ggsave(filename = file.path(plot_path, "P1", "preds_P1_so1_base_plot-1.png"), preds_P1_so1_base_plot, width = 6, height = 6, dpi = 300)
 ```
 ```{r}
 # P1 Confirmatory Model interaction effects of WordTypeP1 and inhibition_control_score
@@ -264,7 +264,7 @@ preds_P1_inhib_p1_so1_base_plot <- ggplot(preds_P1_inhib_p1_so1_base, aes(x = in
     labs(
         x = "Inhibition Control Score (Scaled)",
         y = "Predicted Log Reading Time",
-        title = str_wrap("Predicted log reading times of P1 Word Types at ROI based on Inhibition Control Score (Confirmatory Model)", width = 60),
+        title = str_wrap("Predicted log reading times of P1 Word Types at Spillover 1 based on Inhibition Control Score (Confirmatory Model)", width = 60),
         color = "P1 Word Types",
         fill = "P1 Word Types"
     ) +
@@ -274,7 +274,7 @@ preds_P1_inhib_p1_so1_base_plot <- ggplot(preds_P1_inhib_p1_so1_base, aes(x = in
         legend.title = element_text(size = 8),
         legend.text = element_text(size = 10)
     )
-ggsave(filename = file.path(plot_path, "P1", "preds_P1_inhib_p1_so1_base_plot.png"), preds_P1_inhib_p1_so1_base_plot, width = 6, height = 6, dpi = 300)
+ggsave(filename = file.path(plot_path, "P1", "preds_P1_inhib_p1_so1_base_plot-1.png"), preds_P1_inhib_p1_so1_base_plot, width = 6, height = 6, dpi = 300)
 ```
 ```{r}
 # P1 Exploratory Model main effects of WordTypeP1
@@ -286,7 +286,7 @@ preds_P1_so1_exp_plot <- ggplot(preds_P1_so1_exp, aes(x = x, y = predicted)) +
     labs(
         x = "P1 Word Types",
         y = "Predicted Log Reading Time",
-        title = str_wrap("Predicted log reading times at ROI for P1 Word Types (Exploratory Model)", width = 60),
+        title = str_wrap("Predicted log reading times at Spillover 1 for P1 Word Types (Exploratory Model)", width = 60),
     ) +
     theme_minimal(base_size = 12) +
     theme(
@@ -294,7 +294,7 @@ preds_P1_so1_exp_plot <- ggplot(preds_P1_so1_exp, aes(x = x, y = predicted)) +
         legend.title = element_text(size = 10),
         legend.text = element_text(size = 10)
     )
-ggsave(filename = file.path(plot_path, "P1", "preds_P1_so1_exp_plot.png"), preds_P1_so1_exp_plot, width = 6, height = 6, dpi = 300)
+ggsave(filename = file.path(plot_path, "P1", "preds_P1_so1_exp_plot-1.png"), preds_P1_so1_exp_plot, width = 6, height = 6, dpi = 300)
 ```
 ```{r}
 # P1 exploratory Model interaction effects of WordTypeP1 and inhibition_control_score
@@ -309,7 +309,7 @@ preds_P1_inhib_p1_so1_exp_plot <- ggplot(preds_P1_inhib_p1_so1_exp, aes(x = inhi
     labs(
         x = "Inhibition Control Score (Scaled)",
         y = "Predicted Log Reading Time",
-        title = str_wrap("Predicted log reading times of P1 Word Types at ROI based on Inhibition Control Score (Exploratory Model)", width = 60),
+        title = str_wrap("Predicted log reading times of P1 Word Types at Spillover 1 based on Inhibition Control Score (Exploratory Model)", width = 60),
         color = "P1 Word Types",
         fill = "P1 Word Types"
     ) +
@@ -319,7 +319,7 @@ preds_P1_inhib_p1_so1_exp_plot <- ggplot(preds_P1_inhib_p1_so1_exp, aes(x = inhi
         legend.title = element_text(size = 8),
         legend.text = element_text(size = 10)
     )
-ggsave(filename = file.path(plot_path, "P1", "preds_P1_inhib_p1_so1_exp_plot.png"), preds_P1_inhib_p1_so1_exp_plot, width = 6, height = 6, dpi = 300)
+ggsave(filename = file.path(plot_path, "P1", "preds_P1_inhib_p1_so1_exp_plot-1.png"), preds_P1_inhib_p1_so1_exp_plot, width = 6, height = 6, dpi = 300)
 ```
 ```{r}
 # P1 SO1 also has a significant interaction effect of LexTALE and inhibition_control_score
@@ -359,6 +359,45 @@ preds_inhib_lexTale_p1_so1_exp_plot <- ggplot(preds_inhib_lexTale_p1_so1_exp, ae
         legend.text = element_text(size = 7)
     )
 ggsave(filename = file.path(plot_path, "P1", "preds_inhib_lexTale_p1_so1_exp_plot.png"), preds_inhib_lexTale_p1_so1_exp_plot, width = 6, height = 6, dpi = 300)
+```
+```{r}
+# P1 SO2 also has a significant interaction effect of LexTALE and inhibition_control_score
+# Plot it by binning the LexTALE into 3 categories based on the LexTALE score
+preds_inhib_lexTale_p1_so2_exp <- as.data.frame(ggpredict(
+    p1_so2_exp_model,
+    terms = c("inhibition_control_score [all]", "LexTALE_z[0.33, 0.5, 0.66]"),
+    type = "fixed",
+    bias_correction = TRUE
+))
+
+preds_inhib_lexTale_p1_so2_exp <- preds_inhib_lexTale_p1_so2_exp %>%
+    rename(LexTALE = group, inhib_score = x) %>%
+    mutate(
+        LexTALE_Binned = case_when(
+            LexTALE == "0.33" ~ "Low LexTALE",
+            LexTALE == "0.5" ~ "Medium LexTALE",
+            LexTALE == "0.66" ~ "High LexTALE"
+        )
+    )
+
+preds_inhib_lexTale_p1_so2_exp$inhib_score <- as.numeric(as.character(preds_inhib_lexTale_p1_so2_exp$inhib_score))
+preds_inhib_lexTale_p1_so2_exp_plot <- ggplot(preds_inhib_lexTale_p1_so2_exp, aes(x = inhib_score, y = predicted, color = LexTALE_Binned)) +
+    geom_line(size = 1) +
+    geom_ribbon(aes(ymin = conf.low, ymax = conf.high, fill = LexTALE_Binned), alpha = 0.2, color = NA) +
+    labs(
+        x = "Inhibition Control Score (Scaled)",
+        y = "Predicted Log Reading Time",
+        title = str_wrap("Predicted log reading times at P1 Spillover 2 by inhibition control and LexTALE proficiency (Exploratory Model)", width = 60),
+        color = "Binned LexTALE Score",
+        fill = "Binned LexTALE Score"
+    ) +
+    theme_minimal(base_size = 12) +
+    theme(
+        plot.title = element_text(hjust = 0.5, size = 14),
+        legend.title = element_text(size = 8),
+        legend.text = element_text(size = 7)
+    )
+ggsave(filename = file.path(plot_path, "P1", "preds_inhib_lexTale_p1_so2_exp_plot.png"), preds_inhib_lexTale_p1_so2_exp_plot, width = 6, height = 6, dpi = 300)
 ```
 ```{r}
 # P1 SO1 Exploratory Model also has a significant effect of WordTypeP1 X LexTALE
@@ -525,6 +564,7 @@ preds_freq_lexTale_p1_so1_exp_plot <- ggplot(preds_freq_lexTale_p1_so1_exp, aes(
     )
 ggsave(filename = file.path(plot_path, "P1", "preds_freq_lexTale_p1_so1_exp_plot.png"), preds_freq_lexTale_p1_so1_exp_plot, width = 6, height = 6, dpi = 300)
 ```
+
 ```{r}
 # ============================================================
 # 1c. Spillover 2 Plots
@@ -540,7 +580,7 @@ preds_P1_so2_base_plot <- ggplot(preds_P1_so2_base, aes(x = x, y = predicted)) +
     labs(
         x = "P1 Word Types",
         y = "Predicted Log Reading Time",
-        title = str_wrap("Predicted log reading times at P2 Spillover 2 for P1 Word Types (Confirmatory Model)", width = 60),
+        title = str_wrap("Predicted log reading times at P1 Spillover 2 for P1 Word Types (Confirmatory Model)", width = 60),
     ) +
     theme_minimal(base_size = 12) +
     theme(
@@ -563,7 +603,7 @@ preds_P1_inhib_p1_so2_base_plot <- ggplot(preds_P1_inhib_p1_so2_base, aes(x = in
     labs(
         x = "Inhibition Control Score(Scaled)",
         y = "Predicted Log Reading Time",
-        title = str_wrap("Predicted log reading times of P1 Word Types at P2 Spillover 2 based on Inhibition Control Score (Confirmatory Model)", width = 60),
+        title = str_wrap("Predicted log reading times of P1 Word Types at P1 Spillover 2 based on Inhibition Control Score (Confirmatory Model)", width = 60),
         color = "P1 Word Types",
         fill = "P1 Word Types"
     ) +
@@ -586,7 +626,7 @@ preds_P1_so2_exp_plot <- ggplot(preds_P1_so2_base, aes(x = x, y = predicted)) +
     labs(
         x = "P1 Word Types",
         y = "Predicted Log Reading Time",
-        title = str_wrap("Predicted log reading times at P2 Spillover 2 for P1 Word Types (Exploratory Model)", width = 60),
+        title = str_wrap("Predicted log reading times at P1 Spillover 2 for P1 Word Types (Exploratory Model)", width = 60),
     ) +
     theme_minimal(base_size = 12) +
     theme(
@@ -609,7 +649,7 @@ preds_P1_inhib_p1_so2_exp_plot <- ggplot(preds_P1_inhib_p1_so2_base, aes(x = inh
     labs(
         x = "Inhibition Control Score(Scaled)",
         y = "Predicted Log Reading Time",
-        title = str_wrap("Predicted log reading times of P1 Word Types at P2 Spillover 2 based on Inhibition Control Score (Exploratory Model)", width = 60),
+        title = str_wrap("Predicted log reading times of P1 Word Types at P1 Spillover 2 based on Inhibition Control Score (Exploratory Model)", width = 60),
         color = "P1 Word Types",
         fill = "P1 Word Types"
     ) +
@@ -742,7 +782,7 @@ p1_p2_inhib_preds_roi_exp_plot <- ggplot(p1_p2_inhib_preds_roi_exp, aes(x = inhi
 ggsave(filename = file.path(plot_path, "P2", "p1_p2_inhib_preds_roi_exp_plot.png"), p1_p2_inhib_preds_roi_exp_plot, width = 8, height = 6, dpi = 300)
 ```
 ```{r}
-# P1 Confirmatory Model has a significant effect of Word length
+# P2 Confirmatory Model has a significant effect of Word length
 preds_wordLength_p2_roi_base <- as.data.frame(ggpredict(
     p2_roi_base_model,
     terms = c("wordLengthP2_z"),
@@ -763,7 +803,31 @@ preds_wordLength_p2_roi_base_plot <- ggplot(preds_wordLength_p2_roi_base, aes(x 
     theme(
         plot.title = element_text(hjust = 0.5, size = 14),
     )
-ggsave(filename = file.path(plot_path, "P1", "preds_wordLength_p2_roi_base_plot.png"), preds_wordLength_p2_roi_base_plot, width = 6, height = 6, dpi = 300)
+ggsave(filename = file.path(plot_path, "P2", "preds_wordLength_p2_roi_base_plot.png"), preds_wordLength_p2_roi_base_plot, width = 6, height = 6, dpi = 300)
+```
+```{r}
+# P2 Exploratory Model has a significant effect of Word length
+preds_wordLength_p2_roi_exp <- as.data.frame(ggpredict(
+    p2_roi_exp_model,
+    terms = c("wordLengthP2_z"),
+    type = "fixed",
+    bias_correction = TRUE
+))
+
+preds_wordLength_p2_roi_exp$x <- as.numeric(as.character(preds_wordLength_p2_roi_exp$x))
+preds_wordLength_p2_roi_exp_plot <- ggplot(preds_wordLength_p2_roi_exp, aes(x = x, y = predicted)) +
+    geom_line(aes(group = 1), size = 1) +
+    geom_ribbon(aes(ymin = conf.low, ymax = conf.high), alpha = 0.2, color = NA) +
+    labs(
+        x = "Word Length (Scaled)",
+        y = "Predicted Log Reading Time",
+        title = str_wrap("Predicted log reading times at P2 ROI based on Scaled Word Length (Exploratory Model)", width = 60),
+    ) +
+    theme_minimal(base_size = 12) +
+    theme(
+        plot.title = element_text(hjust = 0.5, size = 14),
+    )
+ggsave(filename = file.path(plot_path, "P2", "preds_wordLength_p2_roi_exp_plot.png"), preds_wordLength_p2_roi_exp_plot, width = 6, height = 6, dpi = 300)
 ```
 ```{r}
 # ============================================================
@@ -901,7 +965,7 @@ preds_freq_p2_so1_exp_plot <- ggplot(preds_freq_p2_so1_exp, aes(x = x, y = predi
     theme(
         plot.title = element_text(hjust = 0.5, size = 14),
     )
-ggsave(filename = file.path(plot_path, "P1", "preds_freq_p2_so1_exp_plot.png"), preds_freq_p2_so1_exp_plot, width = 6, height = 6, dpi = 300)
+ggsave(filename = file.path(plot_path, "P2", "preds_freq_p2_so1_exp_plot.png"), preds_freq_p2_so1_exp_plot, width = 6, height = 6, dpi = 300)
 ```
 ```{r}
 # P1 Confirmatory Model has a significant effect of US English Log Frequency
@@ -925,7 +989,7 @@ preds_freq_p2_so1_base_plot <- ggplot(preds_freq_p2_so1_base, aes(x = x, y = pre
     theme(
         plot.title = element_text(hjust = 0.5, size = 14),
     )
-ggsave(filename = file.path(plot_path, "P1", "preds_freq_p2_so1_base_plot.png"), preds_freq_p2_so1_base_plot, width = 6, height = 6, dpi = 300)
+ggsave(filename = file.path(plot_path, "P2", "preds_freq_p2_so1_base_plot.png"), preds_freq_p2_so1_base_plot, width = 6, height = 6, dpi = 300)
 ```
 ```{r}
 # ============================================================

@@ -722,6 +722,11 @@ model_without_WordTypeP1_LogFreqDE_z <- update(model_without_LogFreqUS_z, . ~ . 
 anova(model_without_LogFreqUS_z, model_without_WordTypeP1_LogFreqDE_z)
 ```
 ```{r}
+model_without_LogFreqDE_z <- update(model_without_WordTypeP1_LogFreqDE_z, . ~ . - LogFreqDE_z)
+anova(model_without_LogFreqDE_z, model_without_WordTypeP1_LogFreqDE_z)
+# model_without_WordTypeP1_LogFreqDE_z is marginally better. Use it!
+```
+```{r}
 # remove word length
 model_without_wordlength <- update(model_without_WordTypeP1_LogFreqDE_z, . ~ . - wordLengthP1_z)
 anova(model_without_WordTypeP1_LogFreqDE_z, model_without_wordlength)
@@ -737,6 +742,12 @@ fin_model_without_user_rs <- update(fin_model_without_item_rs, . ~ . - (1 + Word
 anova(fin_model_without_user_rs, fin_model_without_item_rs) # fin_model_without_user_rs is the best model
 ```
 ```{r}
+# Remove LogFreqDE_z again
+model_without_LogFreqDE_z <- update(fin_model_without_user_rs, . ~ . - LogFreqDE_z)
+anova(model_without_LogFreqDE_z, fin_model_without_user_rs)
+```
+```{r}
+# fin_model_without_user_rs is still the better model!
 summary(fin_model_without_user_rs)
 saveRDS(fin_model_without_user_rs, "P1_SO2_Base_lmer_no_slopes.rds")
 ```
@@ -797,6 +808,11 @@ anova(model_without_LogFreqUS_z_LexTALE_z, model_without_LogFreqUS_z)
 # Now remove the LogFeqDE_z:WordTypeP1
 model_without_LogFreqDE_z_P1 <- update(model_without_LogFreqUS_z, . ~ . - WordTypeP1:LogFreqDE_z)
 anova(model_without_LogFreqDE_z_P1, model_without_LogFreqUS_z)
+```
+```{r}
+model_without_LogFreqDE_z <- update(model_without_LogFreqDE_z_P1, . ~ . - LogFreqDE_z)
+anova(model_without_LogFreqDE_z_P1, model_without_LogFreqDE_z)
+# model_without_LogFreqDE_z_P1 is better
 ```
 ```{r}
 # Slope Removals

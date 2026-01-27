@@ -71,14 +71,14 @@ items_df_restructured <- items_df %>%
     select(ItemID, IHLength, C1Length) %>%
     pivot_longer(
         cols = c(IHLength, C1Length),
-        names_to = "Condition",
+        names_to = "WordType",
         values_to = "Length"
     )
 
 # Verify the differnce of means of length of IH and C1 groups.
-items_df_restructured$Condition <- as.factor(items_df_restructured$Condition)
+items_df_restructured$WordType <- as.factor(items_df_restructured$WordType)
 wilcoxsign_test(
-    Length ~ Condition | ItemID,
+    Length ~ WordType | ItemID,
     data = items_df_restructured,
     distribution = "exact"
 )

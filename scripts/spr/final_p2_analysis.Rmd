@@ -265,6 +265,25 @@ spr_df_filtered_for_P2$LogFreqP2_z <- scale(spr_df_filtered_for_P2$LogFreqP2, sc
 ```
 ```{r}
 # Take a quick summary at this point for frequency and word length
+te_words <- spr_df_filtered_for_P2[spr_df_filtered_for_P2$WordTypeP2 == "TE", ]
+c2_words <- spr_df_filtered_for_P2[spr_df_filtered_for_P2$WordTypeP2 == "C2", ]
+
+# Word length
+te_words$length <- nchar(te_words$Value)
+c2_words$length <- nchar(c2_words$Value)
+
+summary(te_words$length)
+sd(te_words$length)
+
+summary(c2_words$length)
+sd(c2_words$length)
+
+# Log Frequency
+summary(te_words$LogFreqP2)
+sd(te_words$LogFreqP2)
+
+summary(c2_words$LogFreqP2)
+sd(c2_words$LogFreqP2)
 ```
 ```{r}
 # Save the dataframe for future references
