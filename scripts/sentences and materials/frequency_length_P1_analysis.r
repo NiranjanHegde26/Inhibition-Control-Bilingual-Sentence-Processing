@@ -4,7 +4,7 @@
 # OSF:      https://osf.io/uyvxw
 # Author:   Niranjana Hegde Bhimanakone Satyanarayana
 # Created:  13/10/2025
-# R version: 4.3.2
+# R version: 4.4.3
 #
 # Description:
 # This script obtains the raw frequencies of all words from Position P1

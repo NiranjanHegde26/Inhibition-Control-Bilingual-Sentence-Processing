@@ -1,26 +1,7 @@
-# ============================================================
-# Title:    English Proficiency Analysis Script
-# Project:  Individual Differences of Inhibition Control in Bilingual Sentence Processing: A Self Paced Reading Approach
-# OSF:      https://osf.io/uyvxw
-# Author:   Niranjana Hegde Bhimanakone Satyanarayana
-# Created:  07/11/2025
-# R version: 4.4.3
-#
-# Description:
-# This script analyses (and prints the descriptive statistics) of the
-# English proficiency measures based on the ratings and responses
-# provided by the participants for LexTALE and LEAP-Q tasks,
-# & writes the results back to a file to be used later for reading time analysis.
-#
-#
-# Note:
-# The descriptive statistics reported in the thesis is collected after
-# removing 2 participants with below chance level accuracy at comprehension
-# questions of SPR. An additional filter condition was added to this file
-# by manually extracting the user ID of them
-# ============================================================
-
-# Load libraries
+"
+    Author: Niranjana Hegde B S
+    Date of Creation: Nov 07, 2025
+"
 library(dplyr)
 library(tidyr)
 library(purrr)
@@ -28,16 +9,14 @@ library(stringr)
 library(ggplot2)
 library("jsonlite")
 
-# Response files from tasks
-leapq_results_file <- "D:\\Studies\\Thesis\\Analysis\\Inhibition-Control-Bilingual-Sentence-Processing\\data\\proficiency\\LEAPQFinal.csv"
-lexTale_results_file <- "D:\\Studies\\Thesis\\Analysis\\Inhibition-Control-Bilingual-Sentence-Processing\\data\\proficiency\\LexTALEFinal.csv"
+leapq_results_file <- "D:\\Studies\\Thesis\\Analysis\\Inhibition-Control-Bilingual-Sentence-Processing\\data\\proficiency\\LEAP-Q_Final.csv"
+lexTale_results_file <- "D:\\Studies\\Thesis\\Analysis\\Inhibition-Control-Bilingual-Sentence-Processing\\data\\proficiency\\LexTALE-Final.csv"
 
 leap_q_df <- read.csv(leapq_results_file)
 lexTale_df <- read.csv(lexTale_results_file)
+unique(lexTale_df$workerid)
+unique(leap_q_df$workerid)
 
-# ============================================================
-# LexTALE Analysis
-# ============================================================
 lexTale_df <- lexTale_df %>%
     rowwise() %>%
     mutate(
@@ -54,25 +33,15 @@ lexTale_performance <- lexTale_df %>%
         totalCorrect = correctNonWord + correctWord,
         score = (((correctNonWord / 20) * 100) + ((correctWord / 40) * 100)) / 2 # Formula from LexTALE paper
     )
-
 # List the no. of participants who performed below chance level for each type of words
 print(paste0("Participants who scored below chance level for words: ", nrow(lexTale_performance %>% filter(correctWord < 20))))
 print(paste0("Participants who scored below chance level for non-words: ", nrow(lexTale_performance %>% filter(correctNonWord < 10))))
 print(paste0("Participants who scored below chance level in the task: ", nrow(lexTale_performance %>% filter(totalCorrect < 30))))
+hist(lexTale_performance$score)
+nrow(lexTale_performance)
 
-# The score threshold comes from Lemhöfer and Broersma (2012).
-# 60 or above corresponds to B1 CFBR level or above
-lex_filtered <- lexTale_performance %>%
-    filter(score >= 60)
-print(paste0("Participants who scored above 60: ", nrow(lex_filtered)))
-
-
-# ============================================================
-# Modified LEAP-Q Analysis
-# ============================================================
-# Filter those participants who have scored above 60 in LexTALE
 leap_q_df <- leap_q_df %>%
-    filter(workerid %in% lex_filtered$workerid)
+    filter(workerid %in% lexTale_performance$workerid)
 
 leap_q_df <- leap_q_df %>%
     rowwise() %>%
@@ -123,6 +92,7 @@ leap_q_df <- leap_q_df %>%
         motherTongue %in% c("deutsch", "german", "deutch", "duetsch", "deutshc"),
     ) %>%
     ungroup()
+leap_q_df$motherTongue
 
 calculate_months <- function(x) {
     if (is.null(x$year) || is.null(x$month)) {
@@ -134,9 +104,7 @@ calculate_months <- function(x) {
     return(as.integer(x$year * 12 + x$month))
 }
 
-# Duration of stay in English Speaking countries,
-# and duration of exposure to English from schools,
-# workplaces
+
 duration_of_stay_df <- leap_q_df %>%
     rowwise() %>%
     mutate(
@@ -159,12 +127,7 @@ leap_q_df <- leap_q_df %>%
         workerid %in% duration_of_stay_df$workerid[duration_of_stay_df$durationOfStayInMonths < 50]
     )
 
-summary(duration_of_stay_df$durationOfStayInMonths)
-sd(duration_of_stay_df$durationOfStayInMonths)
-
-summary(duration_of_stay_df$durationOfExposureAtSchoolWorkplaceInMonths)
-sd(duration_of_stay_df$durationOfExposureAtSchoolWorkplaceInMonths)
-
+nrow(leap_q_df)
 # Map all variations of language names to standard versions - applicable only for English and German
 leap_q_df <- leap_q_df %>%
     mutate(
@@ -210,7 +173,6 @@ age_df <- leap_q_df %>%
     group_by(workerid) %>%
     select(workerid, age)
 summary(age_df$age)
-sd(age_df$age)
 
 # Gender
 gender_df <- leap_q_df %>%
@@ -226,9 +188,7 @@ english_exposure_df <- leap_q_df %>%
     ) %>%
     ungroup() %>%
     select(workerid, english_exposure)
-
 summary(english_exposure_df$english_exposure)
-sd(english_exposure_df$english_exposure)
 
 # English Reading preferences
 reading_preferences_df <- leap_q_df %>%
@@ -239,7 +199,6 @@ reading_preferences_df <- leap_q_df %>%
     ungroup() %>%
     select(workerid, english_reading_preference)
 summary(reading_preferences_df$english_reading_preference)
-sd(reading_preferences_df$english_reading_preference)
 
 # Speaking Preferences
 speaking_preferences_df <- leap_q_df %>%
@@ -250,7 +209,6 @@ speaking_preferences_df <- leap_q_df %>%
     ungroup() %>%
     select(workerid, english_speaking_preference)
 summary(speaking_preferences_df$english_speaking_preference)
-sd(speaking_preferences_df$english_speaking_preference)
 
 # Q7 (a) - Formal Education
 formal_education_df <- leap_q_df %>%
@@ -275,18 +233,18 @@ english_proficiency_df <- leap_q_df %>%
     ) %>%
     ungroup() %>%
     select(workerid, AoA, readingAcquistion, selfRatedProficiencySpeaking, selfRatedProficiencyUnderstanding, selfRatedProficiencyReading)
-summary(english_proficiency_df$AoA)
-sd(english_proficiency_df$AoA)
 
-summary(english_proficiency_df$selfRatedProficiencyReading)
-sd(english_proficiency_df$selfRatedProficiencyReading)
+people_with_low_reported_proficiency <- english_proficiency_df %>%
+    filter(
+        selfRatedProficiencyUnderstanding < 4 & selfRatedProficiencyReading < 4
+    ) %>%
+    left_join(
+        lexTale_performance %>% select(workerid, score),
+        by = "workerid"
+    ) %>%
+    select(workerid, score, selfRatedProficiencyUnderstanding, selfRatedProficiencyReading)
+people_with_low_reported_proficiency # These people who rated low in ratings have a C1 or C2 level proficiency as per Lemhöfer & Broersma, 2012. So I don't think I need to remove them
 
-summary(english_proficiency_df$selfRatedProficiencyUnderstanding)
-sd(english_proficiency_df$selfRatedProficiencyUnderstanding)
-
-
-summary(english_proficiency_df$selfRatedProficiencySpeaking)
-sd(english_proficiency_df$selfRatedProficiencySpeaking)
 
 # Contributing factors to learning (Also quoted as Language Entropy in some literature)
 contributing_factors_df <- leap_q_df %>%
@@ -305,28 +263,14 @@ contributing_factors_df <- leap_q_df %>%
     select(workerid, friends, family, reading, self_instructions, tv, radio, education, internet)
 
 summary(contributing_factors_df$friends)
-sd(contributing_factors_df$friends)
-
 summary(contributing_factors_df$family)
-sd(contributing_factors_df$family)
-
+summary(contributing_factors_df$friends)
 summary(contributing_factors_df$reading)
-sd(contributing_factors_df$reading)
-
 summary(contributing_factors_df$self_instructions)
-sd(contributing_factors_df$self_instructions)
-
 summary(contributing_factors_df$tv)
-sd(contributing_factors_df$tv)
-
 summary(contributing_factors_df$radio)
-sd(contributing_factors_df$radio)
-
 summary(contributing_factors_df$education)
-sd(contributing_factors_df$education)
-
 summary(contributing_factors_df$internet)
-sd(contributing_factors_df$internet)
 
 # Factors that one is most exposed to
 exposed_factors_df <- leap_q_df %>%
@@ -345,48 +289,14 @@ exposed_factors_df <- leap_q_df %>%
     select(workerid, friends, family, reading, self_instructions, tv, radio, workplace, internet)
 
 summary(exposed_factors_df$friends)
-sd(exposed_factors_df$friends)
-
 summary(exposed_factors_df$family)
-sd(exposed_factors_df$family)
-
+summary(exposed_factors_df$friends)
 summary(exposed_factors_df$reading)
-sd(exposed_factors_df$reading)
-
 summary(exposed_factors_df$self_instructions)
-sd(exposed_factors_df$self_instructions)
-
 summary(exposed_factors_df$tv)
-sd(exposed_factors_df$tv)
-
 summary(exposed_factors_df$radio)
-sd(exposed_factors_df$radio)
-
 summary(exposed_factors_df$workplace)
-sd(exposed_factors_df$workplace)
-
 summary(exposed_factors_df$internet)
-sd(exposed_factors_df$internet)
-
-
-# LexTALE Histogram Plot
-plot_path <- "D:/Studies/Thesis/Analysis/Inhibition-Control-Bilingual-Sentence-Processing/Plots/lmer"
-lexTale_hist <- ggplot(lex_filtered, aes(x = score)) +
-    geom_histogram(color = "#575555", fill = "#00bfc4") +
-    labs(
-        x = "LexTALE Score",
-        y = "Frequency",
-        title = "LexTALE Distribution Plot"
-    ) +
-    theme_minimal(base_size = 12) +
-    theme(
-        plot.title = element_text(hjust = 0.5, size = 10)
-    )
-ggsave(filename = file.path(plot_path, "lexTale_dist.png"), lexTale_hist, width = 4, height = 4, dpi = 300)
-
-
-summary(lex_filtered$score)
-sd(lex_filtered$score)
 
 # Correlational section between LEAP-Q and LexTALE
 # Self Reported proficiency and LexTALE
@@ -403,6 +313,68 @@ proficiency_matrix <- english_proficiency_df %>%
     )
 cor(proficiency_matrix %>% select(-workerid), use = "complete.obs", method = "spearman")
 
+library(ggplot2)
+
+ggplot(proficiency_matrix, aes(Reading, LexTALE)) +
+    geom_jitter(width = 0.2, height = 0) +
+    geom_smooth(method = "lm", se = FALSE) +
+    theme_minimal()
+
+ggplot(proficiency_matrix, aes(Understanding, LexTALE)) +
+    geom_jitter(width = 0.2, height = 0) +
+    geom_smooth(method = "lm", se = FALSE) +
+    theme_minimal()
+
+pairs(proficiency_matrix %>%
+    select(Reading, Understanding, LexTALE))
+
+
+proficiency_matrix %>%
+    arrange(Reading) %>%
+    select(Reading, LexTALE) %>%
+    head(10)
+
+proficiency_matrix %>%
+    arrange(desc(Reading)) %>%
+    select(Reading, LexTALE) %>%
+    head(10)
+
+install.packages("ppcor")
+library(ppcor)
+
+pcor.test(proficiency_matrix$Reading,
+    proficiency_matrix$LexTALE,
+    proficiency_matrix$Understanding,
+    method = "spearman"
+)
+cor(proficiency_matrix$Reading,
+    proficiency_matrix$Understanding,
+    method = "spearman",
+    use = "complete.obs"
+)
+
+
+
+cor_with_score <- proficiency_matrix %>%
+    select(-score) %>%
+    summarise(across(everything(), ~ cor(.x, proficiency_matrix$score, use = "complete.obs", method = "spearman")))
+cor_with_score
+
+# Correlation between scores and exposure duration
+proficiency_matrix_with_exposure <- proficiency_matrix %>%
+    left_join(
+        duration_of_stay_df,
+        by = "workerid"
+    ) %>%
+    rename(
+        "Stay in English Speaking Country" = durationOfStayInMonths,
+        Exposure = durationOfExposureAtSchoolWorkplaceInMonths,
+        LexTALE = score,
+        "Reading Acquistion" = readingAcquistion,
+    )
+
+cor(proficiency_matrix_with_exposure %>% select(-workerid), use = "complete.obs", method = "spearman")
+colnames(leap_q_df)
 
 leap_q_df <- leap_q_df %>%
     left_join(
@@ -411,6 +383,5 @@ leap_q_df <- leap_q_df %>%
     )
 
 final_participants <- leap_q_df %>% dplyr::select(workerid, score)
-nrow(final_participants)
 
-write.csv(final_participants, "D:/Studies/Thesis/Analysis/Inhibition-Control-Bilingual-Sentence-Processing/data/final analysis/participants_based_on_proficiency.csv", row.names = FALSE)
+write.csv(final_participants, "D:/Studies/Thesis/Analysis/Inhibition-Control-Bilingual-Sentence-Processing/data/final analysis/participants_based_on_proficiency_full.csv", row.names = FALSE)
